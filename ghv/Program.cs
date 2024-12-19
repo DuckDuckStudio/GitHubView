@@ -1,5 +1,5 @@
-﻿using Spectre.Console;
-using ghv.Command;
+﻿using ghv.Command;
+using Spectre.Console;
 
 namespace ghv
 {
@@ -12,7 +12,13 @@ namespace ghv
                 switch (args[0].ToLower())
                 {
                     case "contribute":
+                    case "ctb":
                         await Contribute.ExecuteAsync();
+                        break;
+                    case "help":
+                    case "--help":
+                    case "-h":
+                        Help.Show();
                         break;
                     // ...更多命令...
                     default:

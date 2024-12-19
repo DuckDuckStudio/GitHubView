@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Nodes;
+﻿using Spectre.Console;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Spectre.Console;
 
 namespace ghv.Command
 {
