@@ -39,7 +39,7 @@ jobs:
       run: |
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
-        move GitHubView-installer.exe output/GitHubView-installer.exe
+        move installer/GitHubView-installer.exe output/GitHubView-installer.exe
 
     - name: Create installer on Linux
       if: runner.os == 'Linux'
