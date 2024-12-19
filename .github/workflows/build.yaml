@@ -39,9 +39,12 @@ jobs:
       run: |
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
+        move GitHubView-installer.exe output/GitHubView-installer.exe
 
     - name: Create installer on Linux
       if: runner.os == 'Linux'
+      env:
+        MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
       run: |
         # 安装 dpkg
         sudo apt-get update
@@ -53,16 +56,18 @@ jobs:
         echo 'Section: base' >> output/DEBIAN/control
         echo 'Priority: optional' >> output/DEBIAN/control
         echo 'Architecture: all' >> output/DEBIAN/control
-        #echo 'Maintainer: 鸭鸭「カモ」 <you@example.com>' >> output/DEBIAN/control
+        echo "Maintainer: 鸭鸭「カモ」 <${MAINTAINER_EMAIL}>" >> output/DEBIAN/control
         echo 'Description: GHV Application' >> output/DEBIAN/control
         # 生成安装包
         dpkg --build output ghv.deb
+        mv ghv.deb output/ghv.deb
 
     - name: Create installer on macOS
       if: runner.os == 'macOS'
       run: |
         # 创建安装包
         pkgbuild --root ./output --identifier DuckStudio.GitHubView --version 1.0 --install-location /Applications --scripts ./output GitHubView.pkg
+        mv GitHubView.pkg output/GitHubView.pkg
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
