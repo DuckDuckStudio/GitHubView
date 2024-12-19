@@ -37,13 +37,13 @@ jobs:
     - name: Create zip file
       run: |
         if [ $RUNNER_OS == 'Windows' ]; then
-          Compress-Archive -Path ./output/* -DestinationPath ./ghv.zip
+          Compress-Archive -Path ./output/* -DestinationPath ./ghv-${{ matrix.os }}.zip
         else
-          zip -r ghv.zip ./output
+          zip -r ghv-${{ matrix.os }}.zip ./output
         fi
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ghv
-        path: ghv.zip
+        name: ghv-${{ matrix.os }}
+        path: ghv-${{ matrix.os }}.zip
