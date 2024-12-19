@@ -34,20 +34,46 @@ jobs:
     - name: Publish
       run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
 
-    - name: Create zip file on Windows
+    - name: Create installer on Windows
       if: runner.os == 'Windows'
-      run: Compress-Archive -Path ./output/* -DestinationPath ./ghv-${{ matrix.os }}.zip
+      run: |
+        # 创建 Inno Setup 脚本
+        echo '[Setup]' > installer.iss
+        echo 'AppName=GitHubView' >> installer.iss
+        echo 'AppVersion=1.0' >> installer.iss
+        echo 'DefaultDirName={pf}\GitHubView' >> installer.iss
+        echo 'OutputDir=.' >> installer.iss
+        echo 'OutputBaseFilename=GitHubView-installer' >> installer.iss
+        echo '[Files]' >> installer.iss
+        echo 'Source: "output\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs' >> installer.iss
+        # 生成安装包
+        iscc installer.iss
 
-    - name: Create zip file on Linux
+    - name: Create installer on Linux
       if: runner.os == 'Linux'
-      run: zip -r ghv-${{ matrix.os }}.zip ./output
+      run: |
+        # 安装 dpkg-deb
+        sudo apt-get update
+        sudo apt-get install -y dpkg-deb
+        # 创建 DEBIAN 目录和控制文件
+        mkdir -p output/DEBIAN
+        echo 'Package: GitHubView' > output/DEBIAN/control
+        echo 'Version: 1.0' >> output/DEBIAN/control
+        echo 'Section: base' >> output/DEBIAN/control
+        echo 'Priority: optional' >> output/DEBIAN/control
+        echo 'Architecture: all' >> output/DEBIAN/control
+        echo 'Description: GHV Application' >> output/DEBIAN/control
+        # 生成安装包
+        dpkg-deb --build output ghv.deb
 
-    - name: Create zip file on macOS
+    - name: Create installer on macOS
       if: runner.os == 'macOS'
-      run: zip -r ghv-${{ matrix.os }}.zip ./output
+      run: |
+        # 创建安装包
+        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version 1.0 --install-location /Applications GitHubView.pkg
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ghv-${{ matrix.os }}
-        path: ghv-${{ matrix.os }}.zip
+        path: ./output
