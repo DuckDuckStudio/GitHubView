@@ -26,13 +26,13 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ghv/ghv.csproj
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
 
     - name: Publish
-      run: dotnet publish --configuration Release --no-build --output ./output
+      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
 
     - name: Create zip file
       run: |
