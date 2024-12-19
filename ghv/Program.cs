@@ -7,13 +7,22 @@ namespace ghv
     {
         static async Task Main(string[] args)
         {
-            if (args.Length > 0 && args[0].ToLower() == "contribute")
+            if (args.Length > 0)
             {
-                await Contribute.ExecuteAsync();
+                switch (args[0].ToLower())
+                {
+                    case "contribute":
+                        await Contribute.ExecuteAsync();
+                        break;
+                    // ...更多命令...
+                    default:
+                        AnsiConsole.Markup("[red]无效的命令。[/]\n");
+                        break;
+                }
             }
             else
             {
-                AnsiConsole.Markup("[red]无效的命令。请使用 'ghv.exe contribute'。[/]\n");
+                AnsiConsole.Markup("[red]请提供一个命令。[/]\n");
             }
         }
     }
