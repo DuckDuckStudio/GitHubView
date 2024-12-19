@@ -64,7 +64,7 @@ namespace ghv.Command
             do
             {
                 AnsiConsole.Markup("[cyan]? [/]" + prompt + " ");
-                input = Console.ReadLine()?.Trim();
+                input = (Console.ReadLine() ?? string.Empty).Trim();
 
                 if (!validator(input))
                 {
@@ -82,7 +82,7 @@ namespace ghv.Command
             do
             {
                 AnsiConsole.Markup("[cyan]? [/]" + prompt + " ");
-                string input = Console.ReadLine()?.Trim();
+                string input = (Console.ReadLine() ?? string.Empty).Trim();
 
                 if (int.TryParse(input, out topN) && topN >= 1)
                 {
