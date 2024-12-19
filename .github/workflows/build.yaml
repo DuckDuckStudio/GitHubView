@@ -52,9 +52,9 @@ jobs:
     - name: Create installer on Linux
       if: runner.os == 'Linux'
       run: |
-        # 安装 dpkg-deb
+        # 安装 dpkg
         sudo apt-get update
-        sudo apt-get install -y dpkg-deb
+        sudo apt-get install -y dpkg
         # 创建 DEBIAN 目录和控制文件
         mkdir -p output/DEBIAN
         echo 'Package: GitHubView' > output/DEBIAN/control
@@ -64,7 +64,7 @@ jobs:
         echo 'Architecture: all' >> output/DEBIAN/control
         echo 'Description: GHV Application' >> output/DEBIAN/control
         # 生成安装包
-        dpkg-deb --build output ghv.deb
+        dpkg --build output ghv.deb
 
     - name: Create installer on macOS
       if: runner.os == 'macOS'
