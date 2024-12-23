@@ -1,4 +1,4 @@
-using Spectre.Console;
+﻿using Spectre.Console;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
@@ -55,7 +55,7 @@ namespace ghv.Command
                 foreach (JsonNode contributor in contributors)
                 {
                     JsonObject contributorObject = contributor.AsObject();
-                    string login = contributorObject["login"].GetValue<string>();
+                    string login = Markup.Escape(contributorObject["login"].GetValue<string>()); // 转义 [] 之类的特殊符号
                     int contributions = contributorObject["contributions"].GetValue<int>();
                     table.AddRow(rank.ToString(), $"[link=https://github.com/{login}]{login}[/]", contributions.ToString());
                     rank++;

@@ -1,4 +1,4 @@
-using ghv.Command;
+﻿using ghv.Command;
 using Spectre.Console;
 
 namespace ghv

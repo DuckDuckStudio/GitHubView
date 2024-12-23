@@ -91,9 +91,9 @@ namespace ghv.Command
 
                     foreach (var label in labels)
                     {
-                        string labelName = label["name"]?.ToString() ?? string.Empty;
+                        string labelName = Markup.Escape(label["name"]?.ToString()) ?? string.Empty;
                         string labelColor = label["color"]?.ToString() ?? "000000";
-                        string labelDescription = label["description"]?.ToString() ?? string.Empty;
+                        string labelDescription = Markup.Escape(label["description"]?.ToString()) ?? string.Empty;
 
                         table.AddRow(
                             $"[#{labelColor}]{labelName}[/]",
