@@ -20,6 +20,9 @@ namespace ghv
                     case "-h":
                         Help.Show();
                         break;
+                    case "labels":
+                        await Labels.ExecuteAsync();
+                        break;
                     // ...更多命令...
                     default:
                         AnsiConsole.Markup("[red]无效的命令。[/]\n");
