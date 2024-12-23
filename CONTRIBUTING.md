@@ -25,6 +25,22 @@
     ```
 7. **创建 Pull Request**：在 GitHub 上创建一个 Pull Request，描述您的更改并请求合并。
 
+### 本地调试
+1. 安装依赖：
+    ```bash
+    dotnet add ghv package Spectre.Console
+    ```
+
+2. 构建项目：
+    ```bash
+    dotnet build ghv
+    ```
+
+3. 调试修改：
+    ```bash
+    dotnet run --project ghv <命令或参数>
+    ```
+
 ## 代码规范
 
 - 请确保您的代码符合项目的代码风格。
