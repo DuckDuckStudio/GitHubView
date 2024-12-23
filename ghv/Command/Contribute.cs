@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
@@ -6,11 +6,22 @@ namespace ghv.Command
 {
     internal class Contribute
     {
-        public static async Task ExecuteAsync()
+        public static async Task ExecuteAsync(string owner, string repo, int topN)
         {
-            string owner = GetUserInput("请输入仓库所有者名称:", ValidateOwnerOrRepo);
-            string repo = GetUserInput("请输入仓库名称:", ValidateOwnerOrRepo);
-            int topN = GetTopNInput("请输入要获取前几个贡献者信息:");
+            if (string.IsNullOrWhiteSpace(owner))
+            {
+                owner = GetUserInput("请输入仓库所有者名称:", ValidateOwnerOrRepo);
+            }
+
+            if (string.IsNullOrWhiteSpace(repo))
+            {
+                repo = GetUserInput("请输入仓库名称:", ValidateOwnerOrRepo);
+            }
+            
+            if (topN < 1)
+            {
+                topN = GetTopNInput("请输入要获取前几个贡献者信息:");
+            }
 
             bool repositoryExists = await ValidateRepositoryExists(owner, repo);
             if (!repositoryExists)

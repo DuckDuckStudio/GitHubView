@@ -2,7 +2,7 @@
   "profiles": {
     "ghv": {
       "commandName": "Project",
-      "commandLineArgs": "ctb"
+      "commandLineArgs": "ctb DuckDuckStudio Fufu_Tools"
     }
   }
 }
