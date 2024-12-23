@@ -1,6 +1,6 @@
 [Setup]
 AppName=GitHubView
-AppVersion=1.0
+AppVersion=1.0.0
 DefaultDirName={pf}\GitHubView
 VersionInfoCopyright=Copyright (c) 鸭鸭「カモ」
 AppPublisher=鸭鸭「カモ」
