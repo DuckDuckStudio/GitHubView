@@ -42,7 +42,7 @@ GitHubView 是一个用于查看 GitHub 上的信息的命令行工具。目前�
 
 <div style="display: flex; gap: 15px;">
   <img src="docs/images/README/contribute.png" alt="使用示例" style="height: 75%; width: 75%;">
-  <p>获取指定仓库的前 N 个贡献者信息。<br>换句话说就是获取仓库的贡献数/者排行榜。<br>后续可能会加入点击跳转用户界面或筛选提交的功能，敬请期待。</p>
+  <p>获取指定仓库的前 N 个贡献者信息。<br>换句话说就是获取仓库的贡献数/者排行榜。<br>点击用户名可跳转用户界面。</p>
 </div>
 
 #### labels

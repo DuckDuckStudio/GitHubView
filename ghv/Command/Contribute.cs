@@ -46,7 +46,7 @@ namespace ghv.Command
                     JsonObject contributorObject = contributor.AsObject();
                     string login = contributorObject["login"].GetValue<string>();
                     int contributions = contributorObject["contributions"].GetValue<int>();
-                    table.AddRow(rank.ToString(), login, contributions.ToString());
+                    table.AddRow(rank.ToString(), $"[link=https://github.com/{login}]{login}[/]", contributions.ToString());
                     rank++;
                 }
 
