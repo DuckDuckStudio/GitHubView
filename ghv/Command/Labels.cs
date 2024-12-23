@@ -6,10 +6,17 @@ namespace ghv.Command
 {
     internal class Labels
     {
-        public static async Task ExecuteAsync()
+        public static async Task ExecuteAsync(string owner, string repo)
         {
-            string owner = GetUserInput("请输入仓库所有者名称:", ValidateOwnerOrRepo);
-            string repo = GetUserInput("请输入仓库名称:", ValidateOwnerOrRepo);
+            if (string.IsNullOrWhiteSpace(owner))
+            {
+                owner = GetUserInput("请输入仓库所有者名称:", ValidateOwnerOrRepo);
+            }
+
+            if (string.IsNullOrWhiteSpace(repo))
+            {
+                repo = GetUserInput("请输入仓库名称:", ValidateOwnerOrRepo);
+            }
 
             bool repositoryExists = await ValidateRepositoryExists(owner, repo);
             if (!repositoryExists)
@@ -84,9 +91,9 @@ namespace ghv.Command
 
                     foreach (var label in labels)
                     {
-                        string labelName = label["name"]?.ToString() ?? string.Empty;
+                        string labelName = Markup.Escape(label["name"]?.ToString()) ?? string.Empty;
                         string labelColor = label["color"]?.ToString() ?? "000000";
-                        string labelDescription = label["description"]?.ToString() ?? string.Empty;
+                        string labelDescription = Markup.Escape(label["description"]?.ToString()) ?? string.Empty;
 
                         table.AddRow(
                             $"[#{labelColor}]{labelName}[/]",

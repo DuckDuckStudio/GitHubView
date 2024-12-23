@@ -6,11 +6,22 @@ namespace ghv.Command
 {
     internal class Contribute
     {
-        public static async Task ExecuteAsync()
+        public static async Task ExecuteAsync(string owner, string repo, int topN)
         {
-            string owner = GetUserInput("请输入仓库所有者名称:", ValidateOwnerOrRepo);
-            string repo = GetUserInput("请输入仓库名称:", ValidateOwnerOrRepo);
-            int topN = GetTopNInput("请输入要获取前几个贡献者信息:");
+            if (string.IsNullOrWhiteSpace(owner))
+            {
+                owner = GetUserInput("请输入仓库所有者名称:", ValidateOwnerOrRepo);
+            }
+
+            if (string.IsNullOrWhiteSpace(repo))
+            {
+                repo = GetUserInput("请输入仓库名称:", ValidateOwnerOrRepo);
+            }
+            
+            if (topN < 1)
+            {
+                topN = GetTopNInput("请输入要获取前几个贡献者信息:");
+            }
 
             bool repositoryExists = await ValidateRepositoryExists(owner, repo);
             if (!repositoryExists)
@@ -44,9 +55,9 @@ namespace ghv.Command
                 foreach (JsonNode contributor in contributors)
                 {
                     JsonObject contributorObject = contributor.AsObject();
-                    string login = contributorObject["login"].GetValue<string>();
+                    string login = Markup.Escape(contributorObject["login"].GetValue<string>()); // 转义 [] 之类的特殊符号
                     int contributions = contributorObject["contributions"].GetValue<int>();
-                    table.AddRow(rank.ToString(), login, contributions.ToString());
+                    table.AddRow(rank.ToString(), $"[link=https://github.com/{login}]{login}[/]", contributions.ToString());
                     rank++;
                 }
 

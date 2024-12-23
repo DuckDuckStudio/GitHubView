@@ -11,6 +11,10 @@ namespace ghv
         {
             if (args.Length > 0)
             {
+                // 可能的参数都定义一遍？
+                string owner;
+                string repo;
+
                 switch (args[0].ToLower())
                 {
                     case "help":
@@ -30,11 +34,16 @@ namespace ghv
                         break;
                     case "contribute":
                     case "ctb":
-                        await Contribute.ExecuteAsync();
+                        owner = args.Length > 1 ? args[1] : string.Empty;
+                        repo = args.Length > 2 ? args[2] : string.Empty;
+                        int value = args.Length > 3 && int.TryParse(args[3], out int parsedValue) ? parsedValue : 0; // 0在Contribute.ExecuteAsync中处理等同于未提供
+                        await Contribute.ExecuteAsync(owner, repo, value);
                         break;
                     case "labels":
                     case "label":
-                        await Labels.ExecuteAsync();
+                        owner = args.Length > 1 ? args[1] : string.Empty;
+                        repo = args.Length > 2 ? args[2] : string.Empty;
+                        await Labels.ExecuteAsync(owner, repo);
                         break;
                     // ...更多命令...
                     default:
