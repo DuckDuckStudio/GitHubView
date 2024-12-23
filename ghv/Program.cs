@@ -33,6 +33,7 @@ namespace ghv
                         await Contribute.ExecuteAsync();
                         break;
                     case "labels":
+                    case "label":
                         await Labels.ExecuteAsync();
                         break;
                     // ...更多命令...
