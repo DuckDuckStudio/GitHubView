@@ -5,7 +5,7 @@ namespace ghv
 {
     class Program
     {
-        public const string Version = "1.0.2";
+        public const string Version = "develop";
 
         static async Task Main(string[] args)
         {
@@ -45,6 +45,10 @@ namespace ghv
                         owner = args.Length > 1 ? args[1] : string.Empty;
                         repo = args.Length > 2 ? args[2] : string.Empty;
                         await Labels.ExecuteAsync(owner, repo);
+                        break;
+                    case "user":
+                        string username = args.Length > 1 ? args[1] : string.Empty;
+                        await User.ExecuteAsync(username);
                         break;
                     // ...更多命令...
                     default:
