@@ -5,7 +5,7 @@ namespace ghv
 {
     class Program
     {
-        public const string Version = "develop";
+        public const string Version = "1.0.2";
 
         static async Task Main(string[] args)
         {
