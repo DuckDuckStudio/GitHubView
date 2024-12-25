@@ -6,6 +6,9 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 new_version = sys.argv[1]
+if not new_version:
+    print("Version cannot be empty")
+    sys.exit(1)
 print(f"New version: {new_version}")
 
 program = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "ghv", "Program.cs")

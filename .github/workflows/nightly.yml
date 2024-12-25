@@ -24,11 +24,17 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: 生成版本号
-      id: generate_version
+    - name: 生成版本号 - Unix
+      if: runner.os == 'ubuntu-latest' || runner.os == 'macos-latest'
       run: |
         echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d.%H.%M.%S')" >> $GITHUB_ENV
         echo "Generated version: $NIGHTLY_VERSION"
+
+    - name: 生成版本号 - Windows
+      if: runner.os == 'windows-latest'
+      run: |
+        echo "NIGHTLY_VERSION=$(powershell -Command \"Get-Date -Format 'yyyy.MM.dd.HH.mm.ss'\")" >> $GITHUB_ENV
+        echo "Generated version: $env:NIGHTLY_VERSION"
 
     - name: 更新版本号
       run: |
