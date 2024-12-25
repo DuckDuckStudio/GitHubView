@@ -35,7 +35,7 @@ jobs:
       run: |
         $version = Get-Date -Format "yyyy.MM.dd.HH.mm.ss"
         echo "NIGHTLY_VERSION=$version" >> $env:GITHUB_ENV
-        echo "Generated version: $env:NIGHTLY_VERSION"  
+        echo "Generated version: ${{ env.NIGHTLY_VERSION }}"  
 
     - name: 更新版本号
       run: |
