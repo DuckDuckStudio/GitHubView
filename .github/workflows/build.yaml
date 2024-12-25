@@ -1,12 +1,6 @@
-name: Build and Package
+name: 打包与构建发行版文件
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -32,7 +26,7 @@ jobs:
       run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
 
     - name: 发布
-      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
+      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
       if: runner.os == 'Windows'
@@ -40,8 +34,8 @@ jobs:
         # 创建Release目录
         mkdir -p Release
 
-        # 压缩输出到Release目录
-        7z a -tzip Release/GitHubView.zip output/*
+        # 移动输出文件到Release目录
+        move output/GitHubView.exe Release/GitHubView.exe
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
@@ -56,8 +50,8 @@ jobs:
         # 创建Release目录
         mkdir -p Release
 
-        # 压缩输出到Release目录
-        tar -czf Release/GitHubView.tar.gz output/*
+        # 移动输出文件到Release目录
+        mv output/GitHubView Release/GitHubView
 
         # 安装 dpkg
         sudo apt-get update
@@ -80,9 +74,9 @@ jobs:
       run: |
         # 创建Release目录
         mkdir -p Release
-        
-        # 压缩输出到Release目录
-        zip -r Release/GitHubView.zip output/*
+
+        # 移动输出文件到Release目录
+        mv output/GitHubView Release/GitHubView
 
         # 创建安装包
         pkgbuild --root ./output --identifier DuckStudio.GitHubView --version 1.0 --install-location /Applications --scripts ./output GitHubView.pkg
