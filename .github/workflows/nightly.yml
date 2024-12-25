@@ -1,8 +1,8 @@
 name: Nightly 构建与发布
 
 on:
-  schedule:
-    - cron: '0 * * * *' # 每小时触发一次构建
+  #schedule:
+  #  - cron: '0 * * * *' # 每小时触发一次构建
   workflow_dispatch:
 
 jobs:
@@ -99,19 +99,12 @@ jobs:
         pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ env.NIGHTLY_VERSION }} --install-location /Applications --scripts ./output GitHubView.pkg
         mv GitHubView.pkg Release/GitHubView-${{ env.NIGHTLY_VERSION }}-macos.pkg
 
-    - name: 创建 GitHub Release
-      uses: ghosn/release-please-action@v1
+    - name: 发布 Nightly 版本
+      uses: softprops/action-gh-release@v2
       with:
-        release_name: ${{ env.NIGHTLY_VERSION }}
-        release_tag: ${{ env.NIGHTLY_VERSION }}
-        body: |
-          ### Nightly Release
-          自动生成的 Nightly 版本发布。
-          版本号: ${{ env.NIGHTLY_VERSION }}
-        files: ./Release/*
-      
-    - name: 上传发行文件
-      uses: actions/upload-artifact@v4
-      with:
-        name: ghv-nightly-${{ matrix.os }}
-        path: ./Release
+        name: GitHubView Nightly Release (${{ env.NIGHTLY_VERSION }})
+        tag_name: ${{ env.NIGHTLY_VERSION }}
+        prerelease: true
+        generate_release_notes: true
+        files: |
+          Release/*
