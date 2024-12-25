@@ -2,6 +2,10 @@ name: 打包与构建发行版文件
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号'
+        required: true
 
 jobs:
   build:
@@ -19,6 +23,15 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
+    - name: 设置 Python 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: 更新版本号
+      run: |
+        python "auto-scripts/Change-Version.py" "${{ github.event.inputs.version }}"
+
     - name: 还原依赖
       run: dotnet restore ghv/ghv.csproj
 
@@ -35,12 +48,15 @@ jobs:
         mkdir -p Release
 
         # 移动输出文件到Release目录
-        move output/GitHubView.exe Release/GitHubView.exe
+        move output/GitHubView.exe Release/ghv.exe
+
+        # 使用7z压缩为zip格式
+        7z a -tzip Release/GitHubView-windows.zip Release/ghv.exe
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
-        move installer/GitHubView-installer.exe Release/GitHubView-installer.exe
+        move installer/GitHubView-installer.exe Release/GitHubView-Setup-windows.exe
 
     - name: 创建发行文件 - Linux
       if: runner.os == 'Linux'
@@ -51,7 +67,10 @@ jobs:
         mkdir -p Release
 
         # 移动输出文件到Release目录
-        mv output/GitHubView Release/GitHubView
+        mv output/GitHubView Release/ghv
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-linux.tar.gz -C Release ghv
 
         # 安装 dpkg
         sudo apt-get update
@@ -59,7 +78,7 @@ jobs:
         # 创建 DEBIAN 目录和控制文件
         mkdir -p output/DEBIAN
         echo 'Package: GitHubView' > output/DEBIAN/control
-        echo 'Version: 1.0' >> output/DEBIAN/control
+        echo 'Version: ${{ github.event.inputs.version }}' >> output/DEBIAN/control
         echo 'Section: base' >> output/DEBIAN/control
         echo 'Priority: optional' >> output/DEBIAN/control
         echo 'Architecture: all' >> output/DEBIAN/control
@@ -67,7 +86,7 @@ jobs:
         echo 'Description: GHV Application' >> output/DEBIAN/control
         # 生成安装包
         dpkg --build output ghv.deb
-        mv ghv.deb Release/ghv.deb
+        mv ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
 
     - name: 创建发行文件 - macOS
       if: runner.os == 'macOS'
@@ -76,11 +95,14 @@ jobs:
         mkdir -p Release
 
         # 移动输出文件到Release目录
-        mv output/GitHubView Release/GitHubView
+        mv output/GitHubView Release/ghv
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-macos.tar.gz -C Release ghv
 
         # 创建安装包
-        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version 1.0 --install-location /Applications --scripts ./output GitHubView.pkg
-        mv GitHubView.pkg Release/GitHubView.pkg
+        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ github.event.inputs.version }} --install-location /Applications --scripts ./output GitHubView.pkg
+        mv GitHubView.pkg Release/GitHubView-${{ github.event.inputs.version }}-macos.pkg
 
     - name: 上传发行文件
       uses: actions/upload-artifact@v4
