@@ -2,14 +2,14 @@ import os
 import sys
 
 if len(sys.argv) != 2:
-    print("Usage: python Change-Version.py <new_version>")
+    print("[ERROR] Usage: python Change-Version.py <new_version>")
     sys.exit(1)
 
 new_version = sys.argv[1]
 if not new_version:
-    print("Version cannot be empty")
+    print("[ERROR] Version cannot be empty")
     sys.exit(1)
-print(f"New version: {new_version}")
+print(f"[INFO] New version: {new_version}")
 
 program = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "ghv", "Program.cs")
 try:
@@ -24,7 +24,7 @@ try:
     with open(program, 'w', encoding='utf-8') as f:
         f.write(content)
 except Exception as e:
-    print(f"A error occurred when processing {program}: {e}")
+    print(f"[ERROR] A error occurred when processing {program}: {e}")
     sys.exit(1)
 
 iss_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "Windows.iss")
@@ -40,6 +40,6 @@ try:
     with open(iss_file, 'w', encoding='utf-8') as f:
         f.write(content)
 except Exception as e:
-    print(f"A error occurred when processing {iss_file}: {e}")
+    print(f"[ERROR] A error occurred when processing {iss_file}: {e}")
     sys.exit(1)
 
