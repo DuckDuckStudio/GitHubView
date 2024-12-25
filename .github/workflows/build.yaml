@@ -17,35 +17,42 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - name: Checkout code
+    - name: 检出代码
       uses: actions/checkout@v4
 
-    - name: Setup .NET
+    - name: 设置 .NET 8.0.x
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
+    - name: 还原依赖
       run: dotnet restore ghv/ghv.csproj
 
-    - name: Build
+    - name: 构建
       run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
 
-    - name: Publish
+    - name: 发布
       run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
 
-    - name: Create installer on Windows
+    - name: 创建发行文件 - Windows
       if: runner.os == 'Windows'
       run: |
+        # 压缩输出到Release目录
+        7z a -tzip Release/GitHubView.zip output/*
+
+        # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
-        move installer/GitHubView-installer.exe output/GitHubView-installer.exe
+        move installer/GitHubView-installer.exe Release/GitHubView-installer.exe
 
-    - name: Create installer on Linux
+    - name: 创建发行文件 - Linux
       if: runner.os == 'Linux'
       env:
         MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
       run: |
+        # 压缩输出到Release目录
+        tar -czf Release/GitHubView.tar.gz output/*
+
         # 安装 dpkg
         sudo apt-get update
         sudo apt-get install -y dpkg
@@ -60,17 +67,20 @@ jobs:
         echo 'Description: GHV Application' >> output/DEBIAN/control
         # 生成安装包
         dpkg --build output ghv.deb
-        mv ghv.deb output/ghv.deb
+        mv ghv.deb Release/ghv.deb
 
-    - name: Create installer on macOS
+    - name: 创建发行文件 - macOS
       if: runner.os == 'macOS'
       run: |
+        # 压缩输出到Release目录
+        zip -r Release/GitHubView.zip output/*
+
         # 创建安装包
         pkgbuild --root ./output --identifier DuckStudio.GitHubView --version 1.0 --install-location /Applications --scripts ./output GitHubView.pkg
-        mv GitHubView.pkg output/GitHubView.pkg
+        mv GitHubView.pkg Release/GitHubView.pkg
 
-    - name: Upload artifact
+    - name: 上传发行文件
       uses: actions/upload-artifact@v4
       with:
         name: ghv-${{ matrix.os }}
-        path: ./output
+        path: ./Release
