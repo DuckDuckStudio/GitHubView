@@ -1,0 +1,102 @@
+name: 打包与构建发行版文件
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号'
+        required: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 .NET 8.0.x
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: 设置 Python 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: 更新版本号
+      run: |
+        python "auto-scripts/Change-Version.py" "${{ github.event.inputs.version }}"
+
+    - name: 还原依赖
+      run: dotnet restore ghv/ghv.csproj
+
+    - name: 构建
+      run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
+
+    - name: 发布
+      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
+
+    - name: 创建发行文件 - Windows
+      if: runner.os == 'Windows'
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用7z压缩为zip格式
+        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-windows.zip output/*
+
+        # 创建安装包
+        curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
+        iscc installer/Windows.iss
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-Setup-windows.exe
+
+    - name: 创建发行文件 - Linux
+      if: runner.os == 'Linux'
+      env:
+        MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-linux.tar.gz -C output .
+
+        # 安装 dpkg
+        sudo apt-get update
+        sudo apt-get install -y dpkg
+        # 创建 DEBIAN 目录和控制文件
+        mkdir -p output/DEBIAN
+        echo 'Package: GitHubView' > output/DEBIAN/control
+        echo 'Version: ${{ github.event.inputs.version }}' >> output/DEBIAN/control
+        echo 'Section: base' >> output/DEBIAN/control
+        echo 'Priority: optional' >> output/DEBIAN/control
+        echo 'Architecture: all' >> output/DEBIAN/control
+        echo "Maintainer: 鸭鸭「カモ」 <${MAINTAINER_EMAIL}>" >> output/DEBIAN/control
+        echo 'Description: GHV Application' >> output/DEBIAN/control
+        # 生成安装包
+        dpkg --build output ghv.deb
+        mv ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
+
+    - name: 创建发行文件 - macOS
+      if: runner.os == 'macOS'
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-macos.tar.gz -C output .
+
+        # 创建安装包
+        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ github.event.inputs.version }} --install-location /Applications --scripts ./output GitHubView.pkg
+        mv GitHubView.pkg Release/GitHubView-${{ github.event.inputs.version }}-macos.pkg
+
+    - name: 上传发行文件
+      uses: actions/upload-artifact@v4
+      with:
+        name: ghv-${{ matrix.os }}
+        path: ./Release
