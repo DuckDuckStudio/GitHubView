@@ -39,7 +39,7 @@ jobs:
       run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
 
     - name: 发布
-      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output /p:PublishSingleFile=true /p:PublishTrimmed=true
+      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
 
     - name: 创建发行文件 - Windows
       if: runner.os == 'Windows'
@@ -48,15 +48,15 @@ jobs:
         mkdir -p Release
 
         # 移动输出文件到Release目录
-        move output/GitHubView.exe Release/ghv.exe
+        move output/* Release/
 
         # 使用7z压缩为zip格式
-        7z a -tzip Release/GitHubView-windows.zip Release/ghv.exe
+        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-windows.zip Release/*
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
-        move installer/GitHubView-installer.exe Release/GitHubView-Setup-windows.exe
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-Setup-windows.exe
 
     - name: 创建发行文件 - Linux
       if: runner.os == 'Linux'
@@ -67,10 +67,10 @@ jobs:
         mkdir -p Release
 
         # 移动输出文件到Release目录
-        mv output/GitHubView Release/ghv
+        mv output/* Release/
 
         # 使用tar压缩
-        tar -czvf Release/GitHubView-linux.tar.gz -C Release ghv
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-linux.tar.gz -C Release .
 
         # 安装 dpkg
         sudo apt-get update
@@ -95,10 +95,10 @@ jobs:
         mkdir -p Release
 
         # 移动输出文件到Release目录
-        mv output/GitHubView Release/ghv
+        mv output/* Release/
 
         # 使用tar压缩
-        tar -czvf Release/GitHubView-macos.tar.gz -C Release ghv
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-macos.tar.gz -C Release .
 
         # 创建安装包
         pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ github.event.inputs.version }} --install-location /Applications --scripts ./output GitHubView.pkg
