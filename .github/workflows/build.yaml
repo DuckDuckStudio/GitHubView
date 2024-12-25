@@ -47,11 +47,8 @@ jobs:
         # 创建Release目录
         mkdir -p Release
 
-        # 移动输出文件到Release目录
-        move output/* Release/
-
         # 使用7z压缩为zip格式
-        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-windows.zip Release/*
+        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-windows.zip output/*
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
@@ -66,11 +63,8 @@ jobs:
         # 创建Release目录
         mkdir -p Release
 
-        # 移动输出文件到Release目录
-        mv output/* Release/
-
         # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-linux.tar.gz -C Release .
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-linux.tar.gz -C output .
 
         # 安装 dpkg
         sudo apt-get update
@@ -94,11 +88,8 @@ jobs:
         # 创建Release目录
         mkdir -p Release
 
-        # 移动输出文件到Release目录
-        mv output/* Release/
-
         # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-macos.tar.gz -C Release .
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-macos.tar.gz -C output .
 
         # 创建安装包
         pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ github.event.inputs.version }} --install-location /Applications --scripts ./output GitHubView.pkg
