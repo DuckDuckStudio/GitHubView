@@ -37,6 +37,9 @@ jobs:
     - name: 创建发行文件 - Windows
       if: runner.os == 'Windows'
       run: |
+        # 创建Release目录
+        mkdir -p Release
+
         # 压缩输出到Release目录
         7z a -tzip Release/GitHubView.zip output/*
 
@@ -50,6 +53,9 @@ jobs:
       env:
         MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
       run: |
+        # 创建Release目录
+        mkdir -p Release
+
         # 压缩输出到Release目录
         tar -czf Release/GitHubView.tar.gz output/*
 
@@ -72,6 +78,9 @@ jobs:
     - name: 创建发行文件 - macOS
       if: runner.os == 'macOS'
       run: |
+        # 创建Release目录
+        mkdir -p Release
+        
         # 压缩输出到Release目录
         zip -r Release/GitHubView.zip output/*
 
