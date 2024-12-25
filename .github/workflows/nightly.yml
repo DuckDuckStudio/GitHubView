@@ -1,0 +1,117 @@
+name: Nightly 构建与发布
+
+on:
+  schedule:
+    - cron: '0 * * * *' # 每小时触发一次构建
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 .NET 8.0.x
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: 设置 Python 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: 生成版本号
+      id: generate_version
+      run: |
+        echo "NIGHTLY_VERSION=Nightly-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        echo "Generated version: $NIGHTLY_VERSION"
+
+    - name: 更新版本号
+      run: |
+        python "auto-scripts/Change-Version.py" "${{ env.NIGHTLY_VERSION }}"
+
+    - name: 还原依赖
+      run: dotnet restore ghv/ghv.csproj
+
+    - name: 构建
+      run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
+
+    - name: 发布
+      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
+
+    - name: 创建发行文件 - Windows
+      if: runner.os == 'Windows'
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用7z压缩为zip格式
+        7z a -tzip Release/GitHubView-${{ env.NIGHTLY_VERSION }}-windows.zip output/*
+
+        # 创建安装包
+        curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
+        iscc installer/Windows.iss
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-Setup-windows.exe
+
+    - name: 创建发行文件 - Linux
+      if: runner.os == 'Linux'
+      env:
+        MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.tar.gz -C output .
+
+        # 安装 dpkg
+        sudo apt-get update
+        sudo apt-get install -y dpkg
+        # 创建 DEBIAN 目录和控制文件
+        mkdir -p output/DEBIAN
+        echo 'Package: GitHubView' > output/DEBIAN/control
+        echo 'Version: ${{ env.NIGHTLY_VERSION }}' >> output/DEBIAN/control
+        echo 'Section: base' >> output/DEBIAN/control
+        echo 'Priority: optional' >> output/DEBIAN/control
+        echo 'Architecture: all' >> output/DEBIAN/control
+        echo "Maintainer: 鸭鸭「カモ」 <${MAINTAINER_EMAIL}>" >> output/DEBIAN/control
+        echo 'Description: GHV Application' >> output/DEBIAN/control
+        # 生成安装包
+        dpkg --build output ghv.deb
+        mv ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.deb
+
+    - name: 创建发行文件 - macOS
+      if: runner.os == 'macOS'
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-macos.tar.gz -C output .
+
+        # 创建安装包
+        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ env.NIGHTLY_VERSION }} --install-location /Applications --scripts ./output GitHubView.pkg
+        mv GitHubView.pkg Release/GitHubView-${{ env.NIGHTLY_VERSION }}-macos.pkg
+
+    - name: 创建 GitHub Release
+      uses: ghosn/release-please-action@v1
+      with:
+        release_name: ${{ env.NIGHTLY_VERSION }}
+        release_tag: ${{ env.NIGHTLY_VERSION }}
+        body: |
+          ### Nightly Release
+          自动生成的 Nightly 版本发布。
+          版本号: ${{ env.NIGHTLY_VERSION }}
+        files: ./Release/*
+      
+    - name: 上传发行文件
+      uses: actions/upload-artifact@v4
+      with:
+        name: ghv-nightly-${{ matrix.os }}
+        path: ./Release
