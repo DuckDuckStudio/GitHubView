@@ -33,8 +33,9 @@ jobs:
     - name: 生成版本号 - Windows
       if: runner.os == 'Windows'
       run: |
-        echo "NIGHTLY_VERSION=$(powershell -Command \"Get-Date -Format 'yyyy.MM.dd.HH.mm.ss'\")" >> $GITHUB_ENV
-        echo "Generated version: $env:NIGHTLY_VERSION"
+        $version = Get-Date -Format "yyyy.MM.dd.HH.mm.ss"
+        echo "NIGHTLY_VERSION=$version" >> $env:GITHUB_ENV
+        echo "Generated version: $env:NIGHTLY_VERSION"  
 
     - name: 更新版本号
       run: |
