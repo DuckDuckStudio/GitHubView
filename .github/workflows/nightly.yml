@@ -27,13 +27,14 @@ jobs:
     - name: 生成版本号 - Unix
       if: runner.os == 'Linux' || runner.os == 'macOS'
       run: |
-        echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d.%H.%M.%S')" >> $GITHUB_ENV
+        echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d').${{ github.run_id }}" >> $GITHUB_ENV
         echo "Generated version: $NIGHTLY_VERSION"
 
     - name: 生成版本号 - Windows
       if: runner.os == 'Windows'
       run: |
-        $version = Get-Date -Format "yyyy.MM.dd.HH.mm.ss"
+        $date = Get-Date -Format "yyyy.MM.dd"
+        $version = "$date.${{ github.run_id }}"
         echo "NIGHTLY_VERSION=$version" >> $env:GITHUB_ENV
         echo "Generated version: ${{ env.NIGHTLY_VERSION }}"  
 
