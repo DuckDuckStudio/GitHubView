@@ -1,8 +1,6 @@
 name: Nightly 构建与发布
 
 on:
-  #schedule:
-  #  - cron: '0 * * * *' # 每小时触发一次构建
   workflow_dispatch:
 
 jobs:
@@ -29,7 +27,7 @@ jobs:
     - name: 生成版本号
       id: generate_version
       run: |
-        echo "NIGHTLY_VERSION=Nightly-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d.%H.%M.%S')" >> $GITHUB_ENV
         echo "Generated version: $NIGHTLY_VERSION"
 
     - name: 更新版本号
