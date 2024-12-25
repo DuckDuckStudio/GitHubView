@@ -1,6 +1,11 @@
 name: Nightly 构建与发布
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'ghv/**'
   workflow_dispatch:
 
 jobs:
