@@ -98,7 +98,7 @@ namespace ghv.Command
                 {
                     if (propertiesToDisplay.Contains(property.Key) && property.Key != "login" && property.Key != "name")
                     {
-                        string propertyName = propertyTranslations.ContainsKey(property.Key) ? propertyTranslations[property.Key] : property.Key;
+                        string propertyName = propertyTranslations.TryGetValue(property.Key, out string? value) ? value : property.Key;
                         string propertyValue = Markup.Escape(property.Value?.ToString() ?? string.Empty);
 
                         if (!string.IsNullOrWhiteSpace(propertyValue))
