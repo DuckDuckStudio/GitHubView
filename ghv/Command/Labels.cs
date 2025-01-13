@@ -65,56 +65,90 @@ namespace ghv.Command
         private static async Task FetchAndDisplayLabels(string owner, string repo)
         {
             using HttpClient client = new();
-            string url = $"https://api.github.com/repos/{owner}/{repo}/labels";
+            string baseUrl = "https://api.github.com/repos";
+            string url = $"{baseUrl}/{owner}/{repo}/labels?per_page=100"; // 设置 per_page=100 以减少分页 - https://docs.github.com/zh/rest/issues/labels#list-labels-for-a-repository
             client.DefaultRequestHeaders.Add("User-Agent", "CSharpApp");
-            HttpResponseMessage response = await client.GetAsync(url);
 
-            if (response.IsSuccessStatusCode)
+            List<JsonNode> allLabels = [];
+            string? nextUrl = url;
+
+            while (nextUrl != null)
             {
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                JsonNode? jsonNode = JsonNode.Parse(jsonResponse);
-                if (jsonNode == null || jsonNode.AsArray() == null)
-                {
-                    AnsiConsole.Markup("[red]无法解析标签数据。[/]\n");
-                    return;
-                }
-                JsonArray labels = jsonNode.AsArray();
+                HttpResponseMessage response = await client.GetAsync(nextUrl);
 
-                if (labels.Count > 0)
+                if (response.IsSuccessStatusCode)
                 {
-                    var table = new Table();
-                    table.Border(TableBorder.Rounded);
-                    table.BorderColor(Color.Grey);
-                    table.AddColumn(new TableColumn("标签名称").Centered());
-                    table.AddColumn(new TableColumn("颜色").Centered());
-                    table.AddColumn(new TableColumn("描述").Centered());
-
-                    foreach (var label in labels)
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    JsonNode? jsonNode = JsonNode.Parse(jsonResponse);
+                    if (jsonNode == null || jsonNode.AsArray() == null)
                     {
-                        string labelName = Markup.Escape(label["name"]?.ToString()) ?? string.Empty;
-                        string labelColor = label["color"]?.ToString() ?? "000000";
-                        string labelDescription = Markup.Escape(label["description"]?.ToString()) ?? string.Empty;
-
-                        table.AddRow(
-                            $"[#{labelColor}]{labelName}[/]",
-                            $"[#{labelColor}]{labelColor}[/]",
-                            $"[#{labelColor}]{labelDescription}[/]"
-                        ).Border(TableBorder.Square);
+                        AnsiConsole.Markup("[red]无法解析标签数据。[/]\n");
+                        return;
                     }
 
-                    table.LeftAligned();
+                    // 合并获取到的标签
+                    allLabels.AddRange(jsonNode.AsArray().Cast<JsonNode>());
 
-                    AnsiConsole.Write(table);
+                    // 检查 Link 头以获取分页信息
+                    var linkHeader = response.Headers.Contains("Link") ? response.Headers.GetValues("Link").FirstOrDefault() : null;
+                    nextUrl = GetNextPageUrlFromLinkHeader(linkHeader); // 只需要处理分页 URL
                 }
                 else
                 {
-                    AnsiConsole.Markup("[yellow]该仓库没有标签。[/]\n");
+                    AnsiConsole.Markup("[red]无法获取标签，请稍后再试。[/]\n");
+                    return;
                 }
+            }
+
+            if (allLabels.Count > 0)
+            {
+                var table = new Table();
+                table.Border(TableBorder.Rounded);
+                table.BorderColor(Color.Grey);
+                table.AddColumn(new TableColumn("标签名称").Centered());
+                table.AddColumn(new TableColumn("颜色").Centered());
+                table.AddColumn(new TableColumn("描述").Centered());
+
+                foreach (var label in allLabels)
+                {
+                    string labelName = Markup.Escape(label["name"]?.ToString() ?? string.Empty);
+                    string labelColor = label["color"]?.ToString() ?? string.Empty;
+                    string labelDescription = Markup.Escape(label["description"]?.ToString() ?? string.Empty);
+
+                    table.AddRow(
+                        $"[#{labelColor}]{labelName}[/]",
+                        $"[#{labelColor}]{labelColor}[/]",
+                        $"[#{labelColor}]{labelDescription}[/]"
+                    ).Border(TableBorder.Square);
+                }
+
+                    table.LeftAligned();
+                    table.LeftAligned();
+
+                table.LeftAligned();
+
+                AnsiConsole.Write(table);
             }
             else
             {
-                AnsiConsole.Markup("[red]无法获取标签，请稍后再试。[/]\n");
+                AnsiConsole.Markup("[yellow]该仓库没有标签。[/]\n");
             }
+        }
+
+        // 解析 Link 头，获取下一页的 URL
+        private static string? GetNextPageUrlFromLinkHeader(string? linkHeader)
+        {
+            if (string.IsNullOrEmpty(linkHeader)) return null;
+
+            var regex = new Regex(@"<([^>]+)>;\s*rel=""next""");
+            var match = regex.Match(linkHeader);
+
+            if (match.Success)
+            {
+                return match.Groups[1].Value; // 返回匹配的 URL 部分
+            }
+
+            return null;
         }
     }
 }
