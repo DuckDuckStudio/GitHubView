@@ -42,8 +42,14 @@ namespace ghv.Command
 
             if (response.IsSuccessStatusCode)
             {
-                string content = await response.Content.ReadAsStringAsync();
-                JsonNode jsonNode = JsonNode.Parse(content);
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                JsonNode? jsonNode = JsonNode.Parse(jsonResponse);
+
+                if (jsonNode == null || jsonNode.AsArray() == null)
+                {
+                    AnsiConsole.Markup("[red]无法解析贡献者数据。[/]\n");
+                    return;
+                }
                 JsonArray contributors = jsonNode.AsArray();
 
                 var table = new Table();
@@ -52,11 +58,16 @@ namespace ghv.Command
                 table.AddColumn("贡献计数");
 
                 int rank = 1;
-                foreach (JsonNode contributor in contributors)
+                foreach (JsonNode? contributor in contributors)
                 {
-                    JsonObject contributorObject = contributor.AsObject();
-                    string login = Markup.Escape(contributorObject["login"].GetValue<string>()); // 转义 [] 之类的特殊符号
-                    int contributions = contributorObject["contributions"].GetValue<int>();
+                    JsonObject? contributorObject = contributor?.AsObject();
+                    if (contributorObject == null)
+                    {
+                        continue; // 如果 contributorObject 为 null，则跳过此项
+                    }
+
+                    string login = Markup.Escape(contributorObject["login"]?.GetValue<string>() ?? string.Empty); // 转义 [] 之类的特殊符号
+                    int contributions = contributorObject?["contributions"]?.GetValue<int>() ?? 0;
                     table.AddRow(rank.ToString(), $"[link=https://github.com/{login}]{login}[/]", contributions.ToString());
                     rank++;
                 }
