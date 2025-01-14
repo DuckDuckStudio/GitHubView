@@ -1,3 +1,0 @@
-# 设置 IDE0008 - 用显式类型代替 var 为警告等级
-[*.cs]
-dotnet_diagnostic.IDE0008.severity = warning
