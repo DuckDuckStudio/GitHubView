@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ghv": {
-      "commandName": "Project",
-      "commandLineArgs": "label microsoft PowerToys"
-    }
-  }
-}
