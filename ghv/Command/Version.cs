@@ -6,7 +6,7 @@ namespace ghv.Command
     {
         public static void Show()
         {
-            var table = new Table();
+            Table table = new();
             table.AddColumn("条目");
             table.AddColumn("内容");
             string versionLink = Program.Version == "develop" 
