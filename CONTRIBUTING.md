@@ -4,6 +4,9 @@
 
 ## 如何贡献
 
+> [!TIP]
+> 在贡献本项目前，请先阅读程序的[开发文档](https://github.com/DuckDuckStudio/GitHubView/tree/master/ghv/docs)，如对文档有疑问，请提出新的优化分类 Issue。
+
 1. **Fork 仓库**：点击右上角的 "Fork" 按钮，将仓库复制到您的 GitHub 账户中。
 2. **克隆仓库**：将 Fork 的仓库克隆到本地计算机。
     ```bash
@@ -23,7 +26,7 @@
     ```bash
     git push origin feature/your-feature-name
     ```
-7. **创建 Pull Request**：在 GitHub 上创建一个 Pull Request，描述您的更改并请求合并。
+7. **创建 Pull Request**：在 GitHub 上创建一个 **指向 `develop` 分支的** Pull Request，描述您的更改并请求合并。
 
 ### 本地调试
 1. 安装依赖：
@@ -40,11 +43,6 @@
     ```bash
     dotnet run --project ghv <命令或参数>
     ```
-
-## 代码规范
-
-- 请确保您的代码符合项目的代码风格。
-- 提交前请运行所有测试并确保它们通过。
 
 ## 报告问题
 
