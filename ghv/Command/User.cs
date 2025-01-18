@@ -67,14 +67,14 @@ namespace ghv.Command
                     return;
                 }
 
-                var table = new Table();
+                Table table = new Table();
                 table.Border(TableBorder.Rounded);
                 table.BorderColor(Color.Grey);
                 table.AddColumn(new TableColumn("属性").Centered());
                 table.AddColumn(new TableColumn("值").Centered());
 
-                var propertiesToDisplay = new List<string> { "login", "name", "company", "blog", "location", "email", "bio", "twitter_username" };
-                var propertyTranslations = new Dictionary<string, string>
+                List<string> propertiesToDisplay = new List<string> { "login", "name", "company", "blog", "location", "email", "bio", "twitter_username" };
+                Dictionary<string, string> propertyTranslations = new Dictionary<string, string>
                 {
                     { "login", "登录名" },
                     { "name", "姓名" },
@@ -94,7 +94,7 @@ namespace ghv.Command
                     table.AddRow("姓名", combinedName).Border(TableBorder.Square);
                 }
 
-                foreach (var property in jsonNode.AsObject())
+                foreach (KeyValuePair<string, JsonNode?> property in jsonNode.AsObject())
                 {
                     if (propertiesToDisplay.Contains(property.Key) && property.Key != "login" && property.Key != "name")
                     {
