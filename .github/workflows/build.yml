@@ -41,13 +41,17 @@ jobs:
       run: |
         python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
 
-    - name: 发布
+    - name: 发布 - Windows
+      if: runner.os == 'Windows'
       run: |
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r ${{ matrix.os }}-${{ matrix.arch }}
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r win-${{ matrix.arch }}
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r win-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
-    - name: 发布 - 自发布
+    - name: 发布 - linux
+      if: runner.os == 'Linux'
       run: |
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r ${{ matrix.os }}-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r linux-${{ matrix.arch }}
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r linux-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
       if: runner.os == 'Windows'
