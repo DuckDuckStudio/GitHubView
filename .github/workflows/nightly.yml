@@ -44,8 +44,10 @@ jobs:
         echo "Generated version: ${{ env.NIGHTLY_VERSION }}"  
 
     - name: 更新版本号
+      env:
+        PYTHONIOENCODING: utf-8
       run: |
-        python "auto-scripts/Change-Version.py" "${{ env.NIGHTLY_VERSION }}"
+        python "自动化脚本/修改版本号.py" "${{ env.NIGHTLY_VERSION }}"
 
     - name: 还原依赖
       run: dotnet restore ghv/ghv.csproj
