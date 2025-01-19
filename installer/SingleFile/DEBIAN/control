@@ -1,6 +1,5 @@
 Package: GitHubView
 Version: develop
-Depends: dotnet-runtime-8.0
 Section: utils
 Priority: optional
 Architecture: 这是一个架构

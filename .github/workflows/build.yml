@@ -12,7 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
+        arch: [x86, x64, arm, arm64]
 
     steps:
     - name: 检出代码
@@ -34,14 +35,19 @@ jobs:
       run: |
         python "自动化脚本/修改版本号.py" "${{ github.event.inputs.version }}"
 
-    - name: 还原依赖
-      run: dotnet restore ghv/ghv.csproj
-
-    - name: 构建
-      run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
+    - name: 更新架构信息
+      env:
+        PYTHONIOENCODING: utf-8
+      run: |
+        python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
 
     - name: 发布
-      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
+      run: |
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r ${{ matrix.os }}-${{ matrix.arch }}
+
+    - name: 发布 - 自发布
+      run: |
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r ${{ matrix.os }}-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
       if: runner.os == 'Windows'
@@ -50,12 +56,18 @@ jobs:
         mkdir -p Release
 
         # 使用7z压缩为zip格式
-        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-windows.zip output/*
+        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.zip output/*
+        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.zip output_SingleFile/*
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
-        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-Setup-windows.exe
+        iscc installer/SingleFile/Windows.iss
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup.exe
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup-SingleFile.exe
+
+        # 单独处理单文件
+        move output_SingleFile/ghv.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.exe
 
     - name: 创建发行文件 - Linux
       if: runner.os == 'Linux'
@@ -64,7 +76,8 @@ jobs:
         mkdir -pv Release
 
         # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-linux.tar.gz -C output .
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz -C output .
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz -C output_SingleFile .
 
         # 安装 dpkg
         sudo apt-get update
@@ -72,7 +85,9 @@ jobs:
 
         # 复制 DEBIAN 控制文件
         cp -rpv installer/DEBIAN output
+        cp -rpv installer/SingleFile/DEBIAN output_SingleFile
 
+        # =======================================================
         # 创建安装目录结构
         mkdir -pv output/usr/local/bin
         mkdir -pv output/usr/local/lib/ghv
@@ -89,27 +104,38 @@ jobs:
 
         # 生成安装包
         dpkg --build output ghv.deb
-        mv -v ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
+        mv -v ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
 
         # 验证安装包
-        dpkg --info Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
-        dpkg --contents Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
+        dpkg --info Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
+        dpkg --contents Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
 
-    - name: 创建发行文件 - macOS
-      if: runner.os == 'macOS'
-      run: |
-        # 创建Release目录
-        mkdir -p Release
+        # =======================================================
+        echo "构建自发布版..."
+        # 整理文件
+        mkdir -pv output_SingleFile/usr/local/bin/ghv/
+        mv -v output_SingleFile/ghv output_SingleFile/usr/local/bin/ghv/
+        mv -v output_SingleFile/ghv.deps.json output_SingleFile/usr/local/bin/ghv/
+        mv -v output_SingleFile/ghv.runtimeconfig.json output_SingleFile/usr/local/bin/ghv/
+        mv -v output_SingleFile/ghv.dll output_SingleFile/usr/local/bin/ghv/
+        mv -v output_SingleFile/Spectre.Console.dll output_SingleFile/usr/local/bin/ghv/
+        mv -v output_SingleFile/ghv.pdb output_SingleFile/usr/local/bin/ghv/
 
-        # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-macos.tar.gz -C output .
+        # 生成安装包
+        dpkg --build output_SingleFile ghv.deb
+        mv -v ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.deb
 
-        # 创建安装包
-        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ github.event.inputs.version }} --install-location /Applications --scripts ./output GitHubView.pkg
-        mv GitHubView.pkg Release/GitHubView-${{ github.event.inputs.version }}-macos.pkg
+        # 验证安装包
+        dpkg --info Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.deb
+        dpkg --contents Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.deb
+
+        # =======================================================
+        echo "发布单文件..."
+        # 单独处理单文件
+        mv -v output_SingleFile/ghv Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile
 
     - name: 上传发行文件
       uses: actions/upload-artifact@v4
       with:
-        name: ghv-${{ matrix.os }}
+        name: ghv-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
         path: ./Release
