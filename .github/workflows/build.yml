@@ -57,8 +57,6 @@ jobs:
 
     - name: 创建发行文件 - Linux
       if: runner.os == 'Linux'
-      env:
-        MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
       run: |
         # 创建Release目录
         mkdir -p Release
@@ -77,7 +75,7 @@ jobs:
         echo 'Section: base' >> output/DEBIAN/control
         echo 'Priority: optional' >> output/DEBIAN/control
         echo 'Architecture: all' >> output/DEBIAN/control
-        echo "Maintainer: 鸭鸭「カモ」 <${MAINTAINER_EMAIL}>" >> output/DEBIAN/control
+        echo "Maintainer: 鸭鸭「カモ」 <Yzcbs123@163.com>" >> output/DEBIAN/control
         echo 'Description: GHV Application' >> output/DEBIAN/control
 
         # 创建安装目录结构
