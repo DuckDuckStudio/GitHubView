@@ -3,6 +3,7 @@ Version: develop
 Depends: dotnet-runtime-8.0
 Section: utils
 Priority: optional
+Architecture: all
 Maintainer: Duck Studio <Yzcbs123@163.com>
 Description: Viewing content on GitHub in your console.
 Homepage: https://github.com/DuckDuckStudio/GitHubView
