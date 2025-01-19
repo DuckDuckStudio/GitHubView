@@ -86,8 +86,8 @@ jobs:
         sudo apt-get install -y dpkg
       
         # 创建 DEBIAN 目录和控制文件
-        mkdir -pv output/DEBIAN
-        cp -rpv installer/DEBIAN output/DEBIAN
+        mkdir -pv output
+        cp -rpv installer/DEBIAN output
       
         # 创建安装目录结构
         mkdir -pv output/usr/local/bin
