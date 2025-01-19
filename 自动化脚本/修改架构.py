@@ -30,7 +30,7 @@ print(f"[INFO] 架构: {架构}")
 # 文件路径和替换规则
 文件和替换规则 = [
     (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "DEBIAN", "control"), '这是一个架构', 架构),
-    (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "self-contained", "DEBIAN", "control"), '这是一个架构', 架构)
+    (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "SingleFile", "DEBIAN", "control"), '这是一个架构', 架构)
 ]
 
 # 执行替换操作
