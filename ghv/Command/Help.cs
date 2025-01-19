@@ -6,7 +6,7 @@ namespace ghv.Command
     {
         public static void Show()
         {
-            var table = new Table();
+            Table table = new Table();
             table.AddColumn("命令");
             table.AddColumn("作用");
             table.AddColumn("参数");
