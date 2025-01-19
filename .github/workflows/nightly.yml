@@ -77,13 +77,14 @@ jobs:
       run: |
         # 创建Release目录
         mkdir -p Release
-
+    
         # 使用tar压缩
         tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.tar.gz -C output .
-
+    
         # 安装 dpkg
         sudo apt-get update
         sudo apt-get install -y dpkg
+
         # 创建 DEBIAN 目录和控制文件
         mkdir -p output/DEBIAN
         echo 'Package: GitHubView' > output/DEBIAN/control
@@ -93,6 +94,20 @@ jobs:
         echo 'Architecture: all' >> output/DEBIAN/control
         echo "Maintainer: 鸭鸭「カモ」 <${MAINTAINER_EMAIL}>" >> output/DEBIAN/control
         echo 'Description: GHV Application' >> output/DEBIAN/control
+    
+        # 创建安装目录结构
+        mkdir -p output/usr/local/bin
+        mkdir -p output/usr/local/lib/ghv
+        mkdir -p output/etc/ghv
+    
+        # 整理文件
+        cp output/ghv output/usr/local/bin/
+        cp output/ghv.deps.json output/etc/ghv/
+        cp output/ghv.runtimeconfig.json output/etc/ghv/
+        cp output/ghv.dll output/usr/local/lib/ghv/
+        cp output/Spectre.Console.dll output/usr/local/lib/ghv/
+        cp output/ghv.pdb output/usr/local/share/ghv/
+
         # 生成安装包
         dpkg --build output ghv.deb
         mv ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.deb
