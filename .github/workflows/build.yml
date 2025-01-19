@@ -86,6 +86,10 @@ jobs:
         mkdir -p output/etc/ghv
 
         # 整理文件
+        mkdir -p output/usr/local/bin/
+        mkdir -p output/etc/ghv/
+        mkdir -p output/usr/local/lib/ghv/
+        mkdir -p output/usr/local/share/ghv/
         cp output/ghv output/usr/local/bin/
         cp output/ghv.deps.json output/etc/ghv/
         cp output/ghv.runtimeconfig.json output/etc/ghv/
