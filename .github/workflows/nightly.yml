@@ -99,16 +99,13 @@ jobs:
         mkdir -p output/etc/ghv
 
         # 整理文件
-        mkdir -p output/usr/local/bin/
-        mkdir -p output/etc/ghv/
-        mkdir -p output/usr/local/lib/ghv/
-        mkdir -p output/usr/local/share/ghv/
-        cp output/ghv output/usr/local/bin/
-        cp output/ghv.deps.json output/etc/ghv/
-        cp output/ghv.runtimeconfig.json output/etc/ghv/
-        cp output/ghv.dll output/usr/local/lib/ghv/
-        cp output/Spectre.Console.dll output/usr/local/lib/ghv/
-        cp output/ghv.pdb output/usr/local/share/ghv/
+        mkdir -p output/usr/local/bin/ghv/
+        mv output/ghv output/usr/local/bin/ghv/
+        mv output/ghv.deps.json output/usr/local/bin/ghv/
+        mv output/ghv.runtimeconfig.json output/usr/local/bin/ghv/
+        mv output/ghv.dll output/usr/local/bin/ghv/
+        mv output/Spectre.Console.dll output/usr/local/bin/ghv/
+        mv output/ghv.pdb output/usr/local/bin/ghv/
 
         # 生成安装包
         dpkg --build output ghv.deb
