@@ -1,0 +1,10 @@
+Package: GitHubView
+Version: develop
+Depends: dotnet-runtime-8.0
+Section: utils
+Priority: optional
+Maintainer: Duck Studio <Yzcbs123@163.com>
+Description: Viewing content on GitHub in your console.
+Homepage: https://github.com/DuckDuckStudio/GitHubView
+License: GNU General Public License v3.0
+Changes: https://github.com/DuckDuckStudio/GitHubView/releases/tag/develop

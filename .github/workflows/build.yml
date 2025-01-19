@@ -61,7 +61,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         # 创建Release目录
-        mkdir -p Release
+        mkdir -pv Release
 
         # 使用tar压缩
         tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-linux.tar.gz -C output .
@@ -71,32 +71,26 @@ jobs:
         sudo apt-get install -y dpkg
 
         # 创建 DEBIAN 目录和控制文件
-        mkdir -p output/DEBIAN
-        echo 'Package: GitHubView' > output/DEBIAN/control
-        echo 'Version: ${{ github.event.inputs.version }}' >> output/DEBIAN/control
-        echo 'Section: base' >> output/DEBIAN/control
-        echo 'Priority: optional' >> output/DEBIAN/control
-        echo 'Architecture: all' >> output/DEBIAN/control
-        echo "Maintainer: 鸭鸭「カモ」 <Yzcbs123@163.com>" >> output/DEBIAN/control
-        echo 'Description: GHV Application' >> output/DEBIAN/control
+        mkdir -pv output/DEBIAN
+        cp -rpv installer/DEBIAN output/DEBIAN
 
         # 创建安装目录结构
-        mkdir -p output/usr/local/bin
-        mkdir -p output/usr/local/lib/ghv
-        mkdir -p output/etc/ghv
+        mkdir -pv output/usr/local/bin
+        mkdir -pv output/usr/local/lib/ghv
+        mkdir -pv output/etc/ghv
 
         # 整理文件
-        mkdir -p output/usr/local/bin/ghv/
-        mv output/ghv output/usr/local/bin/ghv/
-        mv output/ghv.deps.json output/usr/local/bin/ghv/
-        mv output/ghv.runtimeconfig.json output/usr/local/bin/ghv/
-        mv output/ghv.dll output/usr/local/bin/ghv/
-        mv output/Spectre.Console.dll output/usr/local/bin/ghv/
-        mv output/ghv.pdb output/usr/local/bin/ghv/
+        mkdir -pv output/usr/local/bin/ghv/
+        mv -v output/ghv output/usr/local/bin/ghv/
+        mv -v output/ghv.deps.json output/usr/local/bin/ghv/
+        mv -v output/ghv.runtimeconfig.json output/usr/local/bin/ghv/
+        mv -v output/ghv.dll output/usr/local/bin/ghv/
+        mv -v output/Spectre.Console.dll output/usr/local/bin/ghv/
+        mv -v output/ghv.pdb output/usr/local/bin/ghv/
 
         # 生成安装包
         dpkg --build output ghv.deb
-        mv ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
+        mv -v ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
 
         # 验证安装包
         dpkg --info Release/GitHubView-${{ github.event.inputs.version }}-linux.deb
