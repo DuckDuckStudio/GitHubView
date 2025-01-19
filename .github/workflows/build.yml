@@ -70,8 +70,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y dpkg
 
-        # 创建 DEBIAN 目录和控制文件
-        mkdir -pv output
+        # 复制 DEBIAN 控制文件
         cp -rpv installer/DEBIAN output
 
         # 创建安装目录结构

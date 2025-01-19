@@ -85,8 +85,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y dpkg
       
-        # 创建 DEBIAN 目录和控制文件
-        mkdir -pv output
+        # 复制 DEBIAN 控制文件
         cp -rpv installer/DEBIAN output
       
         # 创建安装目录结构
@@ -109,7 +108,7 @@ jobs:
       
         # 验证安装包
         dpkg --info Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.deb
-        dpkg --contents Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.deb        
+        dpkg --contents Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.deb
 
     - name: 创建发行文件 - macOS
       if: runner.os == 'macOS'
