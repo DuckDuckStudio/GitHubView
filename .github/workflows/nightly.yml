@@ -94,53 +94,31 @@ jobs:
         # 创建Release目录
         mkdir -pv Release
 
+        echo "构建tar包..."
+
         # 使用tar压缩
         tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz -C output .
         tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz -C output_SingleFile .
+
+        # =======================================================
+        echo "构建DEB包..."
+        mkdir -pv output_SingleFile/usr/local/bin/
+        cp -pv output_SingleFile/ghv output_SingleFile/usr/local/bin/
 
         # 安装 dpkg
         sudo apt-get update
         sudo apt-get install -y dpkg
 
         # 复制 DEBIAN 控制文件
-        cp -rpv installer/DEBIAN output
         cp -rpv installer/SingleFile/DEBIAN output_SingleFile
 
-        # =======================================================
-        # 创建安装目录结构
-        mkdir -pv output/usr/local/bin
-        mkdir -pv output/usr/local/lib/ghv
-        mkdir -pv output/etc/ghv
-
-        # 整理文件
-        mkdir -pv output/usr/local/bin/ghv/
-        mv -v output/ghv output/usr/local/bin/ghv/
-        mv -v output/ghv.deps.json output/usr/local/bin/ghv/
-        mv -v output/ghv.runtimeconfig.json output/usr/local/bin/ghv/
-        mv -v output/ghv.dll output/usr/local/bin/ghv/
-        mv -v output/Spectre.Console.dll output/usr/local/bin/ghv/
-        mv -v output/ghv.pdb output/usr/local/bin/ghv/
-
         # 生成安装包
-        dpkg --build output ghv.deb
+        dpkg --build output_SingleFile ghv.deb
         mv -v ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.deb
 
         # 验证安装包
         dpkg --info Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.deb
         dpkg --contents Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.deb
-
-        # =======================================================
-        echo "构建单文件版..."
-        mkdir -pv output_SingleFile/usr/local/bin/
-        cp -pv output_SingleFile/ghv output_SingleFile/usr/local/bin/
-
-        # 生成安装包
-        dpkg --build output_SingleFile ghv.deb
-        mv -v ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.deb
-
-        # 验证安装包
-        dpkg --info Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.deb
-        dpkg --contents Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.deb
 
         # =======================================================
         echo "发布单文件..."
