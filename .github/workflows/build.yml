@@ -35,17 +35,13 @@ jobs:
       run: |
         python "自动化脚本/修改版本号.py" "${{ github.event.inputs.version }}"
 
-    - name: 发布 - Windows - x64/x86/arm64/amd64
-      run: |
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true
-
-    - name: 发布 - linux - x64/arm/arm64/amd64
+    - name: 发布
       run: |
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
+      if: ${{ runner.os == 'Windows' }}
       shell: pwsh
       run: |
         # 创建Release目录
@@ -66,6 +62,7 @@ jobs:
 
     - name: 创建发行文件 - Linux
       shell: bash
+      if: ${{ runner.os == 'Linux' }}
       run: |
         # 创建Release目录
         mkdir -pv Release

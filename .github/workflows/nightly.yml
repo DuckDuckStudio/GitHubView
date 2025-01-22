@@ -41,17 +41,13 @@ jobs:
       run: |
         python "自动化脚本/修改版本号.py" "${{ env.NIGHTLY_VERSION }}"
 
-    - name: 发布 - Windows - x64/x86/arm64/amd64
-      run: |
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true
-
-    - name: 发布 - linux - x64/arm/arm64/amd64
+    - name: 发布
       run: |
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
+      if: ${{ runner.os == 'Windows' }}
       shell: pwsh
       run: |
         # 创建Release目录
@@ -71,6 +67,7 @@ jobs:
         move output_SingleFile/ghv.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe
 
     - name: 创建发行文件 - Linux
+      if: ${{ runner.os == 'Linux' }}
       shell: bash
       run: |
         # 创建Release目录
