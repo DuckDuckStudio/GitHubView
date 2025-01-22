@@ -14,74 +14,55 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        arch: [x86, x64, arm, arm64, amd64]
 
     steps:
     - name: 检出代码
-      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/checkout@v4
 
     - name: 设置 .NET 8.0.x
-      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
     - name: 设置 Python 3.x
-      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: 更新版本号
-      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
         python "自动化脚本/修改版本号.py" "${{ github.event.inputs.version }}"
 
-    - name: 更新架构信息
-      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
-      env:
-        PYTHONIOENCODING: utf-8
+    - name: 发布
       run: |
-        python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
-
-    - name: 发布 - Windows - x64/x86/arm64/amd64
-      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
-      run: |
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r win-${{ matrix.arch }}
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r win-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
-
-    - name: 发布 - linux - x64/arm/arm64/amd64
-      if: ${{ runner.os == 'Linux' && matrix.arch != 'x86' }}
-      run: |
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r linux-${{ matrix.arch }}
-        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r linux-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
-      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
+      if: ${{ runner.os == 'Windows' }}
       shell: pwsh
       run: |
         # 创建Release目录
         mkdir -p Release
 
         # 使用7z压缩为zip格式
-        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.zip output/*
+        7z a -tzip Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}.zip output/*
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
         iscc installer/SingleFile/Windows.iss
-        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup.exe
-        move installer/SingleFile/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup-SingleFile.exe
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-Setup.exe
+        move installer/SingleFile/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-Setup-SingleFile.exe
 
         # 单独处理单文件
-        move output_SingleFile/ghv.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.exe
+        move output_SingleFile/ghv.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-SingleFile.exe
 
     - name: 创建发行文件 - Linux
-      if: ${{ runner.os == 'Linux' && matrix.arch != 'x86' }}
       shell: bash
+      if: ${{ runner.os == 'Linux' }}
       run: |
         # 创建Release目录
         mkdir -pv Release
@@ -89,7 +70,7 @@ jobs:
         echo "构建tar包..."
 
         # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz -C output .
+        tar -czvf Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}.tar.gz -C output .
 
         # =======================================================
         echo "构建DEB包..."
@@ -101,20 +82,19 @@ jobs:
 
         # 生成安装包
         dpkg --build output_SingleFile ghv.deb
-        mv -v ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
+        mv -v ghv.deb Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}.deb
 
         # 验证安装包
-        dpkg --info Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
-        dpkg --contents Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
+        dpkg --info Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}.deb
+        dpkg --contents Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}.deb
 
         # =======================================================
         echo "发布单文件..."
         # 单独处理单文件
-        mv -v output_SingleFile/ghv Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile
+        mv -v output_SingleFile/ghv Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-SingleFile
 
     - name: 上传发行文件
-      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/upload-artifact@v4
       with:
-        name: ghv-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
+        name: ghv-${{ github.event.inputs.version }}-${{ matrix.os }}
         path: ./Release

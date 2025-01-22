@@ -2,7 +2,7 @@ Package: GitHubView
 Version: develop
 Section: utils
 Priority: optional
-Architecture: 这是一个架构
+Architecture: all
 Maintainer: Duck Studio <Yzcbs123@163.com>
 Description: Viewing content on GitHub in your console.
 Homepage: https://github.com/DuckDuckStudio/GitHubView
