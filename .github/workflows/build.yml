@@ -123,15 +123,9 @@ jobs:
         dpkg --contents Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.deb
 
         # =======================================================
-        echo "构建自发布版..."
-        # 整理文件
-        mkdir -pv output_SingleFile/usr/local/bin/ghv/
-        mv -v output_SingleFile/ghv output_SingleFile/usr/local/bin/ghv/
-        mv -v output_SingleFile/ghv.deps.json output_SingleFile/usr/local/bin/ghv/
-        mv -v output_SingleFile/ghv.runtimeconfig.json output_SingleFile/usr/local/bin/ghv/
-        mv -v output_SingleFile/ghv.dll output_SingleFile/usr/local/bin/ghv/
-        mv -v output_SingleFile/Spectre.Console.dll output_SingleFile/usr/local/bin/ghv/
-        mv -v output_SingleFile/ghv.pdb output_SingleFile/usr/local/bin/ghv/
+        echo "构建单文件版..."
+        mkdir -pv output_SingleFile/usr/local/bin/
+        mv -v output_SingleFile/ghv output_SingleFile/usr/local/bin/
 
         # 生成安装包
         dpkg --build output_SingleFile ghv.deb
