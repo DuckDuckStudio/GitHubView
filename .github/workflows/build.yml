@@ -11,6 +11,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         arch: [x86, x64, arm, arm64]
@@ -41,20 +42,21 @@ jobs:
       run: |
         python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
 
-    - name: 发布 - Windows
-      if: runner.os == 'Windows'
+    - name: 发布 - Windows - Any CPU
+      if: ${{ runner.os == 'Windows' }}
       run: |
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r win-${{ matrix.arch }}
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r win-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
-    - name: 发布 - linux
-      if: runner.os == 'Linux'
+    - name: 发布 - linux - x64/arm/arm64
+      if: ${{ runner.os == 'Linux' && matrix.arch != 'x86' }}
       run: |
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r linux-${{ matrix.arch }}
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r linux-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
-      if: runner.os == 'Windows'
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
       run: |
         # 创建Release目录
         mkdir -p Release
@@ -74,7 +76,8 @@ jobs:
         move output_SingleFile/ghv.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.exe
 
     - name: 创建发行文件 - Linux
-      if: runner.os == 'Linux'
+      if: ${{ runner.os == 'Linux' && matrix.arch != 'x86' }}
+      shell: bash
       run: |
         # 创建Release目录
         mkdir -pv Release
@@ -139,6 +142,7 @@ jobs:
         mv -v output_SingleFile/ghv Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile
 
     - name: 上传发行文件
+      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
       uses: actions/upload-artifact@v4
       with:
         name: ghv-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
