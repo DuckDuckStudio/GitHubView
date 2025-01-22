@@ -18,25 +18,30 @@ jobs:
 
     steps:
     - name: 检出代码
+      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
       uses: actions/checkout@v4
 
     - name: 设置 .NET 8.0.x
+      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
     - name: 设置 Python 3.x
+      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: 更新版本号
+      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
         python "自动化脚本/修改版本号.py" "${{ github.event.inputs.version }}"
 
     - name: 更新架构信息
+      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
