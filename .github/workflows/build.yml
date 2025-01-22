@@ -98,10 +98,6 @@ jobs:
         mkdir -pv output_SingleFile/usr/local/bin/
         cp -pv output_SingleFile/ghv output_SingleFile/usr/local/bin/
 
-        # 安装 dpkg
-        sudo apt-get update
-        sudo apt-get install -y dpkg
-
         # 复制 DEBIAN 控制文件
         cp -rpv installer/SingleFile/DEBIAN output_SingleFile
 
