@@ -48,9 +48,8 @@
 > 只是 .NET 把这个步骤叫做发布，不是 LICENSE 的例外。
 
 ```bash
-dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r 系统-架构
-dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r 系统-架构 /p:PublishSingleFile=true /p:PublishTrimmed=true # 单文件
-# 有关架构信息，请查看: https://aka.ms/netsdk1083
+dotnet publish ghv/ghv.csproj --configuration Release --output ./output
+dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true # 单文件
 ```
 
 ## 报告问题
