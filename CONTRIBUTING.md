@@ -44,6 +44,15 @@
     dotnet run --project ghv <命令或参数>
     ```
 
+### 构建发布
+> 只是 .NET 把这个步骤叫做发布，不是 LICENSE 的例外。
+
+```bash
+dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r 系统-架构
+dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r 系统-架构 /p:PublishSingleFile=true /p:PublishTrimmed=true # 单文件
+# 有关架构信息，请查看: https://aka.ms/netsdk1083
+```
+
 ## 报告问题
 
 如果您发现了一个问题，请通过 GitHub Issues 报告。请提供尽可能详细的信息，以帮助我们重现和解决问题。
