@@ -32,7 +32,6 @@ print(f"[INFO] 新版本号: {新版本号}")
     (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "ghv", "Program.cs"), 'Version = "develop"', f'Version = "{新版本号}"'),
     (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "Windows.iss"), 'AppVersion=develop', f'AppVersion={新版本号}'),
     (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "SingleFile", "Windows.iss"), 'AppVersion=develop', f'AppVersion={新版本号}'),
-    (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "DEBIAN", "control"), 'develop', 新版本号),
     (os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))), "installer", "SingleFile", "DEBIAN", "control"), 'develop', 新版本号)
 ]
 
