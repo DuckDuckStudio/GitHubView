@@ -22,7 +22,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 架构 = sys.argv[1]
-if (not 架构) or (架构 not in ["x86", "x64", "arm", "arm64"]):
+if (not 架构) or (架构 not in ["x86", "x64", "arm", "arm64", "amd64"]):
     print(f"[ERROR] 架构为空或格式不正确，获取到的架构: {架构}")
     sys.exit(1)
 print(f"[INFO] 架构: {架构}")
