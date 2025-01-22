@@ -75,7 +75,7 @@ jobs:
         iscc installer/Windows.iss
         iscc installer/SingleFile/Windows.iss
         move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup.exe
-        move installer/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup-SingleFile.exe
+        move installer/SingleFile/GitHubView-installer.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-Setup-SingleFile.exe
 
         # 单独处理单文件
         move output_SingleFile/ghv.exe Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.exe
