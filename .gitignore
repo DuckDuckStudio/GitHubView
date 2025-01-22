@@ -365,3 +365,7 @@ FodyWeavers.xsd
 # Debug Config
 launchSettings.json
 .editorconfig
+
+# TEST
+test.yml
+test.py

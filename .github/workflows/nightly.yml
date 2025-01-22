@@ -9,109 +9,119 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-nightly:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
+        arch: [x86, x64, arm, arm64, amd64]
 
     steps:
     - name: 检出代码
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/checkout@v4
 
     - name: 设置 .NET 8.0.x
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
     - name: 设置 Python 3.x
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
-    - name: 生成版本号 - Unix
-      if: runner.os == 'Linux' || runner.os == 'macOS'
+    - name: 生成版本号
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
+      shell: bash
       run: |
         echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d').${{ github.run_id }}" >> $GITHUB_ENV
-        echo "Generated version: $NIGHTLY_VERSION"
-
-    - name: 生成版本号 - Windows
-      if: runner.os == 'Windows'
-      run: |
-        $date = Get-Date -Format "yyyy.MM.dd"
-        $version = "$date.${{ github.run_id }}"
-        echo "NIGHTLY_VERSION=$version" >> $env:GITHUB_ENV
-        echo "Generated version: ${{ env.NIGHTLY_VERSION }}"  
 
     - name: 更新版本号
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
+      env:
+        PYTHONIOENCODING: utf-8
       run: |
-        python "auto-scripts/Change-Version.py" "${{ env.NIGHTLY_VERSION }}"
+        python "自动化脚本/修改版本号.py" "${{ env.NIGHTLY_VERSION }}"
 
-    - name: 还原依赖
-      run: dotnet restore ghv/ghv.csproj
+    - name: 更新架构信息
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
+      env:
+        PYTHONIOENCODING: utf-8
+      run: |
+        python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
 
-    - name: 构建
-      run: dotnet build ghv/ghv.csproj --configuration Release --no-restore
+    - name: 发布 - Windows - x64/x86/arm64/amd64
+      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
+      run: |
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r win-${{ matrix.arch }}
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r win-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
-    - name: 发布
-      run: dotnet publish ghv/ghv.csproj --configuration Release --no-build --output ./output
+    - name: 发布 - linux - x64/arm/arm64/amd64
+      if: ${{ runner.os == 'Linux' && matrix.arch != 'x86' }}
+      run: |
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r linux-${{ matrix.arch }}
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r linux-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
-      if: runner.os == 'Windows'
+      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
+      shell: pwsh
       run: |
         # 创建Release目录
         mkdir -p Release
 
         # 使用7z压缩为zip格式
-        7z a -tzip Release/GitHubView-${{ env.NIGHTLY_VERSION }}-windows.zip output/*
+        7z a -tzip Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.zip output/*
 
         # 创建安装包
         curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
         iscc installer/Windows.iss
-        move installer/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-Setup-windows.exe
+        iscc installer/SingleFile/Windows.iss
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-Setup.exe
+        move installer/SingleFile/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-Setup-SingleFile.exe
+
+        # 单独处理单文件
+        move output_SingleFile/ghv.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile.exe
 
     - name: 创建发行文件 - Linux
-      if: runner.os == 'Linux'
-      env:
-        MAINTAINER_EMAIL: ${{ secrets.Maintainer_Email }}
+      if: ${{ runner.os == 'Linux' && matrix.arch != 'x86' }}
+      shell: bash
       run: |
         # 创建Release目录
-        mkdir -p Release
+        mkdir -pv Release
+
+        echo "构建tar包..."
 
         # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.tar.gz -C output .
+        tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz -C output .
 
-        # 安装 dpkg
-        sudo apt-get update
-        sudo apt-get install -y dpkg
-        # 创建 DEBIAN 目录和控制文件
-        mkdir -p output/DEBIAN
-        echo 'Package: GitHubView' > output/DEBIAN/control
-        echo 'Version: ${{ env.NIGHTLY_VERSION }}' >> output/DEBIAN/control
-        echo 'Section: base' >> output/DEBIAN/control
-        echo 'Priority: optional' >> output/DEBIAN/control
-        echo 'Architecture: all' >> output/DEBIAN/control
-        echo "Maintainer: 鸭鸭「カモ」 <${MAINTAINER_EMAIL}>" >> output/DEBIAN/control
-        echo 'Description: GHV Application' >> output/DEBIAN/control
+        # =======================================================
+        echo "构建DEB包..."
+        mkdir -pv output_SingleFile/usr/local/bin/
+        cp -pv output_SingleFile/ghv output_SingleFile/usr/local/bin/
+
+        # 复制 DEBIAN 控制文件
+        cp -rpv installer/SingleFile/DEBIAN output_SingleFile
+
         # 生成安装包
-        dpkg --build output ghv.deb
-        mv ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-linux.deb
+        dpkg --build output_SingleFile ghv.deb
+        mv -v ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.deb
 
-    - name: 创建发行文件 - macOS
-      if: runner.os == 'macOS'
-      run: |
-        # 创建Release目录
-        mkdir -p Release
+        # 验证安装包
+        dpkg --info Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.deb
+        dpkg --contents Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}.deb
 
-        # 使用tar压缩
-        tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-macos.tar.gz -C output .
-
-        # 创建安装包
-        pkgbuild --root ./output --identifier DuckStudio.GitHubView --version ${{ env.NIGHTLY_VERSION }} --install-location /Applications --scripts ./output GitHubView.pkg
-        mv GitHubView.pkg Release/GitHubView-${{ env.NIGHTLY_VERSION }}-macos.pkg
+        # =======================================================
+        echo "发布单文件..."
+        # 单独处理单文件
+        mv -v output_SingleFile/ghv Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile
 
     - name: 发布 Nightly 版本
       uses: softprops/action-gh-release@v2
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       with:
         name: GitHubView Nightly Release (${{ env.NIGHTLY_VERSION }})
         tag_name: ${{ env.NIGHTLY_VERSION }}
