@@ -132,7 +132,7 @@ jobs:
         # =======================================================
         echo "构建单文件版..."
         mkdir -pv output_SingleFile/usr/local/bin/
-        mv -v output_SingleFile/ghv output_SingleFile/usr/local/bin/
+        cp -pv output_SingleFile/ghv output_SingleFile/usr/local/bin/
 
         # 生成安装包
         dpkg --build output_SingleFile ghv.deb
