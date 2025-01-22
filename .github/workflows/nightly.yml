@@ -19,43 +19,43 @@ jobs:
 
     steps:
     - name: 检出代码
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/checkout@v4
 
     - name: 设置 .NET 8.0.x
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
     - name: 设置 Python 3.x
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: 生成版本号
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       shell: bash
       run: |
         echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d').${{ github.run_id }}" >> $GITHUB_ENV
 
     - name: 更新版本号
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
         python "自动化脚本/修改版本号.py" "${{ env.NIGHTLY_VERSION }}"
 
     - name: 更新架构信息
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
         python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
 
-    - name: 发布 - Windows - Any CPU
-      if: ${{ runner.os == 'Windows' }}
+    - name: 发布 - Windows - x64/x86/arm64
+      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
       run: |
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r win-${{ matrix.arch }}
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r win-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
@@ -67,7 +67,7 @@ jobs:
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r linux-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
-      if: ${{ runner.os == 'Windows' }}
+      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
       shell: pwsh
       run: |
         # 创建Release目录
@@ -155,7 +155,7 @@ jobs:
 
     - name: 发布 Nightly 版本
       uses: softprops/action-gh-release@v2
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       with:
         name: GitHubView Nightly Release (${{ env.NIGHTLY_VERSION }})
         tag_name: ${{ env.NIGHTLY_VERSION }}

@@ -18,37 +18,37 @@ jobs:
 
     steps:
     - name: 检出代码
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/checkout@v4
 
     - name: 设置 .NET 8.0.x
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
 
     - name: 设置 Python 3.x
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: 更新版本号
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
         python "自动化脚本/修改版本号.py" "${{ github.event.inputs.version }}"
 
     - name: 更新架构信息
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       env:
         PYTHONIOENCODING: utf-8
       run: |
         python "自动化脚本/修改架构.py" "${{ matrix.arch }}"
 
     - name: 发布 - Windows - Any CPU
-      if: ${{ runner.os == 'Windows' }}
+      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
       run: |
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output -r win-${{ matrix.arch }}
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r win-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
@@ -60,7 +60,7 @@ jobs:
         dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile -r linux-${{ matrix.arch }} /p:PublishSingleFile=true /p:PublishTrimmed=true
 
     - name: 创建发行文件 - Windows
-      if: ${{ runner.os == 'Windows' }}
+      if: ${{ runner.os == 'Windows' && matrix.arch != 'arm' }}
       shell: pwsh
       run: |
         # 创建Release目录
@@ -147,7 +147,7 @@ jobs:
         mv -v output_SingleFile/ghv Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}-SingleFile
 
     - name: 上传发行文件
-      if: ${{ !(runner.os == 'Linux' && matrix.arch == 'x86') }}
+      if: ${{ !((runner.os == 'Linux' && matrix.arch == 'x86') || (runner.os == 'Windows' && matrix.arch == 'arm')) }}
       uses: actions/upload-artifact@v4
       with:
         name: ghv-${{ github.event.inputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
