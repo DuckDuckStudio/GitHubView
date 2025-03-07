@@ -20,10 +20,10 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v4
 
-    - name: 设置 .NET 8.0.x
+    - name: 设置 .NET 9.x
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '9.x'
 
     - name: 设置 Python 3.x
       uses: actions/setup-python@v5
