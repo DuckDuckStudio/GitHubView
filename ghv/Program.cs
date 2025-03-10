@@ -15,7 +15,7 @@ namespace ghv
                 string owner;
                 string repo;
 
-                switch (args[0].ToLower()) // 开头的命令不区分大小写
+                switch (args[0].ToLowerInvariant()) // 开头的命令不区分大小写
                 // 接下来的命令参数区分大小写
                 {
                     case "help":

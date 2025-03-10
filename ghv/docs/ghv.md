@@ -22,7 +22,7 @@ namespace ghv
                 string owner;
                 string repo;
 
-                switch (args[0].ToLower()) // 将命令(传给 ghv 的第1个参数)全部转为小写，使得命令不区分大小写
+                switch (args[0].ToLowerInvariant()) // 将命令(传给 ghv 的第1个参数)全部转为小写，使得命令不区分大小写
 
                 // NOTE: 接下来的命令参数区分大小写
                 {
