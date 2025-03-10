@@ -67,14 +67,14 @@ namespace ghv.Command
                     return;
                 }
 
-                Table table = new Table();
+                Table table = new();
                 table.Border(TableBorder.Rounded);
                 table.BorderColor(Color.Grey);
                 table.AddColumn(new TableColumn("属性").Centered());
                 table.AddColumn(new TableColumn("值").Centered());
 
-                List<string> propertiesToDisplay = new List<string> { "login", "name", "company", "blog", "location", "email", "bio", "twitter_username" };
-                Dictionary<string, string> propertyTranslations = new Dictionary<string, string>
+                List<string> propertiesToDisplay = ["login", "name", "company", "blog", "location", "email", "bio", "twitter_username"];
+                Dictionary<string, string> propertyTranslations = new()
                 {
                     { "login", "登录名" },
                     { "name", "姓名" },
