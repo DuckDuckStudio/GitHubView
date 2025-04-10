@@ -8,6 +8,9 @@ on:
       - 'ghv/**'
   workflow_dispatch:
 
+permissions:
+  contents: write # 创建 Release
+
 jobs:
   build-nightly:
     runs-on: ${{ matrix.os }}
