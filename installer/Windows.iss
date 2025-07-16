@@ -7,6 +7,7 @@ AppPublisher=鸭鸭「カモ」
 AppPublisherURL=https://duckduckstudio.github.io/yazicbs.github.io/
 OutputDir=.
 OutputBaseFilename=GitHubView-installer
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
