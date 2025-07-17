@@ -367,5 +367,5 @@ launchSettings.json
 .editorconfig
 
 # TEST
-test.yml
-test.py
+test.*
+!.github/workflows/test.yml
