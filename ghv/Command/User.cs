@@ -73,17 +73,23 @@ namespace ghv.Command
                 table.AddColumn(new TableColumn("属性").Centered());
                 table.AddColumn(new TableColumn("值").Centered());
 
-                List<string> propertiesToDisplay = ["login", "name", "company", "blog", "location", "email", "bio", "twitter_username"];
+                List<string> propertiesToDisplay = [
+                    "login", "name", "company", "blog",
+                    "location", "email", "bio", "twitter_username",
+                    "followers", "following"
+                ];
                 Dictionary<string, string> propertyTranslations = new()
                 {
                     { "login", "登录名" },
-                    { "name", "姓名" },
+                    { "name", "名称" },
                     { "company", "公司" },
                     { "blog", "博客" },
                     { "location", "位置" },
                     { "email", "电子邮件" },
                     { "bio", "简介" },
-                    { "twitter_username", "Twitter" }
+                    { "twitter_username", "Twitter" },
+                    { "followers", "关注者" },
+                    { "following", "正在关注" }
                 };
 
                 string? login = jsonNode["login"]?.ToString();
@@ -91,7 +97,7 @@ namespace ghv.Command
                 if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(login))
                 {
                     string combinedName = $"[link=https://github.com/{login}]{name} ([grey]{login}[/])[/]";
-                    table.AddRow("姓名", combinedName).Border(TableBorder.Square);
+                    table.AddRow("名称", combinedName).Border(TableBorder.Square);
                 }
 
                 foreach (KeyValuePair<string, JsonNode?> property in jsonNode.AsObject())
@@ -105,29 +111,25 @@ namespace ghv.Command
                         {
                             if (property.Key == "twitter_username")
                             {
-                                string twitterLink = $"[link=https://twitter.com/{propertyValue}]{propertyValue}[/]";
-                                table.AddRow(propertyName, twitterLink).Border(TableBorder.Square);
+                                propertyValue = $"[link=https://twitter.com/{propertyValue}]{propertyValue}[/]";
                             }
                             else if (property.Key == "blog")
                             {
-                                string blogLink = $"[link={propertyValue}]{propertyValue}[/]";
-                                table.AddRow(propertyName, blogLink).Border(TableBorder.Square);
+                                propertyValue = $"[link={propertyValue}]{propertyValue}[/]";
                             }
                             else if (property.Key == "location")
                             {
                                 string sanitizedLocation = Uri.EscapeDataString(propertyValue);
-                                string locationLink = $"[link=https://www.bing.com/search?q={sanitizedLocation}]{propertyValue}[/]";
-                                table.AddRow(propertyName, locationLink).Border(TableBorder.Square);
+                                propertyValue = $"[link=https://www.bing.com/search?q={sanitizedLocation}]{propertyValue}[/]";
                             }
                             else if (property.Key == "email")
                             {
-                                string emailLink = $"[link=mailto:{propertyValue}]{propertyValue}[/]";
-                                table.AddRow(propertyName, emailLink).Border(TableBorder.Square);
+                                propertyValue = $"[link=mailto:{propertyValue}]{propertyValue}[/]";
                             }
-                            else
-                            {
-                                table.AddRow(propertyName, propertyValue).Border(TableBorder.Square);
+                            else if (new[] { "following", "followers" }.Contains(property.Key)){
+                                propertyValue = $"{propertyValue} 人";
                             }
+                            table.AddRow(propertyName, propertyValue).Border(TableBorder.Square);
                         }
                     }
                 }
