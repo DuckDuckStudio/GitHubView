@@ -1,0 +1,166 @@
+name: Nightly 构建与发布
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ghv/**
+      - .github/workflows/test.yml
+
+permissions: {}
+
+jobs:
+  build-nightly:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 .NET 9.x
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.x
+
+    - name: 设置 Python 3.x
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
+
+    - name: 生成版本号
+      shell: bash
+      run: echo "NIGHTLY_VERSION=$(date +'%Y.%m.%d').${{ github.run_id }}" >> $GITHUB_ENV
+
+    - name: 更新版本号
+      env:
+        PYTHONIOENCODING: utf-8
+      run: python "自动化脚本/修改版本号.py" "${{ env.NIGHTLY_VERSION }}"
+
+    - name: 发布
+      run: |
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output
+        dotnet publish ghv/ghv.csproj --configuration Release --output ./output_SingleFile /p:PublishSingleFile=true /p:PublishTrimmed=true
+
+    - name: 创建发行文件 - Windows
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        # 创建Release目录
+        mkdir -p Release
+
+        # 使用7z压缩为zip格式
+        7z a -tzip Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.zip output/*
+
+        # 创建安装包
+        curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
+        iscc installer/Windows.iss
+        iscc installer/SingleFile/Windows.iss
+        move installer/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-Setup.exe
+        move installer/SingleFile/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-Setup-SingleFile.exe
+
+        # 单独处理单文件
+        move output_SingleFile/ghv.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe
+
+    - name: 创建发行文件 - Linux
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        # 创建Release目录
+        mkdir -pv Release
+
+        echo "构建tar包..."
+
+        # 使用tar压缩
+        tar -czvf Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.tar.gz -C output .
+
+        # =======================================================
+        echo "构建DEB包..."
+        mkdir -pv output_SingleFile/usr/local/bin/
+        cp -pv output_SingleFile/ghv output_SingleFile/usr/local/bin/
+
+        # 复制 DEBIAN 控制文件
+        cp -rpv installer/SingleFile/DEBIAN output_SingleFile
+
+        # 生成安装包
+        dpkg --build output_SingleFile ghv.deb
+        mv -v ghv.deb Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.deb
+
+        # 验证安装包
+        dpkg --info Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.deb
+        dpkg --contents Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.deb
+
+        # =======================================================
+        echo "发布单文件..."
+        # 单独处理单文件
+        mv -v output_SingleFile/ghv Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile
+
+    - name: 运行测试 - Windows
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        Write-Output "=============== 单文件 ==============="
+        Write-Output "运行 ghv help"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe" help
+        Write-Output "运行 ghv ver"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe" ver
+        Write-Output "运行 ghv about"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe" about
+        Write-Output "运行 ghv ctb DuckDuckStudio GitHubView 10"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe" ctb DuckDuckStudio GitHubView 10
+        Write-Output "运行 ghv labels DuckDuckStudio GitHubView"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe" labels DuckDuckStudio GitHubView
+        Write-Output "运行 ghv user DuckDuckStudio"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile.exe" user DuckDuckStudio
+        Write-Output "=============== 安装程序 ==============="
+        Write-Output "安装 ghv"
+        & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-Setup.exe" /silent /suppressmsgboxes
+        Write-Output "运行 ghv help"
+        ghv help
+        Write-Output "运行 ghv ver"
+        ghv ver
+        Write-Output "运行 ghv about"
+        ghv about
+        Write-Output "运行 ghv ctb DuckDuckStudio GitHubView 10"
+        ghv ctb DuckDuckStudio GitHubView 10
+        Write-Output "运行 ghv labels DuckDuckStudio GitHubView"
+        ghv labels DuckDuckStudio GitHubView
+        Write-Output "运行 ghv user DuckDuckStudio"
+        ghv user DuckDuckStudio
+
+    - name: 运行测试 - Ubuntu
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        echo "=============== 单文件 ==============="
+        echo "运行 ghv help"
+        ./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile help
+        echo "运行 ghv ver"
+        ./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile ver
+        echo "运行 ghv about"
+        ./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile about
+        echo "运行 ghv ctb DuckDuckStudio GitHubView 10"
+        ./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile ctb DuckDuckStudio GitHubView 10
+        echo "运行 ghv labels DuckDuckStudio GitHubView"
+        ./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile labels DuckDuckStudio GitHubView
+        echo "运行 ghv user DuckDuckStudio"
+        ./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-SingleFile user DuckDuckStudio
+        echo "=============== DEB ==============="
+        echo "安装 deb"
+        sudo dpkg -i Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.deb
+        echo "运行 ghv help"
+        ghv help
+        echo "运行 ghv ver"
+        ghv ver
+        echo "运行 ghv about"
+        ghv about
+        echo "运行 ghv ctb DuckDuckStudio GitHubView 10"
+        ghv ctb DuckDuckStudio GitHubView 10
+        echo "运行 ghv labels DuckDuckStudio GitHubView"
+        ghv labels DuckDuckStudio GitHubView
+        echo "运行 ghv user DuckDuckStudio"
+        ghv user DuckDuckStudio

@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'ghv/**'
+      - ghv/**
   workflow_dispatch:
 
 permissions:
@@ -26,12 +26,12 @@ jobs:
     - name: 设置 .NET 9.x
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.x'
+        dotnet-version: 9.x
 
     - name: 设置 Python 3.x
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: 3.x
 
     - name: 生成版本号
       shell: bash
