@@ -1,12 +1,20 @@
 name: Nightly 构建与发布
 
 on:
+  # 拉取请求
+  pull_request:
+    paths:
+      - ghv/**
+      - installer/**
+      - .github/workflows/test.yml
   push:
     branches:
       - master
     paths:
       - ghv/**
+      - installer/**
       - .github/workflows/test.yml
+  workflow_dispatch:
 
 permissions: {}
 
