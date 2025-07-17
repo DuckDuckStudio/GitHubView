@@ -127,6 +127,8 @@ jobs:
         Write-Output "=============== 安装程序 ==============="
         Write-Output "安装 ghv"
         & "./Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-Setup.exe" /silent /suppressmsgboxes
+        Write-Output "等待安装完成"
+        Start-Sleep -Seconds 5
         Write-Output "更新 PATH"
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
         Write-Output "运行 ghv help"
