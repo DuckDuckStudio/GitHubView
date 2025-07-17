@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '版本号'
+        description: 版本号
         required: true
 
 jobs:
@@ -22,12 +22,12 @@ jobs:
     - name: 设置 .NET 9.x
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.x'
+        dotnet-version: 9.x
 
     - name: 设置 Python 3.x
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: 3.x
 
     - name: 更新版本号
       env:
