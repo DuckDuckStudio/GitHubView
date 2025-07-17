@@ -1,4 +1,4 @@
-name: Nightly 构建与发布
+name: 测试构建运行
 
 on:
   # 拉取请求
@@ -19,7 +19,7 @@ on:
 permissions: {}
 
 jobs:
-  build-nightly:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
