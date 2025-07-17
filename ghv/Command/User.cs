@@ -127,7 +127,7 @@ namespace ghv.Command
                                 propertyValue = $"[link=mailto:{propertyValue}]{propertyValue}[/]";
                             }
                             else if (new[] { "following", "followers" }.Contains(property.Key)){
-                                propertyValue = $"{propertyValue} 人";
+                                propertyValue = $"{propertyValue} 个";
                             }
                             table.AddRow(propertyName, propertyValue).Border(TableBorder.Square);
                         }
