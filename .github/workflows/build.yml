@@ -94,7 +94,7 @@ jobs:
         mv -v output_SingleFile/ghv Release/GitHubView-${{ github.event.inputs.version }}-${{ matrix.os }}-SingleFile
 
     - name: 上传发行文件
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ghv-${{ github.event.inputs.version }}-${{ matrix.os }}
         path: ./Release
