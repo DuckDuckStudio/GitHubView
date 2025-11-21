@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: 检出代码
-      uses: actions/checkout@v5.0.1
+      uses: actions/checkout@v6.0.0
 
     - name: 设置 .NET
       uses: actions/setup-dotnet@v5.0.0
