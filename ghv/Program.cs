@@ -7,7 +7,7 @@ namespace ghv
     {
         public const string Version = "develop";
 
-        static async Task Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             if (args.Length > 0)
             {
@@ -53,12 +53,14 @@ namespace ghv
                     // ...更多命令...
                     default:
                         AnsiConsole.Markup("[red]无效的命令。[/]\n");
-                        break;
+                        return 1;
                 }
+                return 0;
             }
             else
             {
                 AnsiConsole.Markup("[red]请提供一个命令。[/]\n");
+                return 1;
             }
         }
     }
