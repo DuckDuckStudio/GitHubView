@@ -68,7 +68,7 @@ namespace ghv.Command
                 }
 
                 Table table = new();
-                table.Border(TableBorder.Rounded);
+                table.Border(TableBorder.Square);
                 table.BorderColor(Color.Grey);
                 table.AddColumn(new TableColumn("属性").Centered());
                 table.AddColumn(new TableColumn("值").Centered());
@@ -97,7 +97,7 @@ namespace ghv.Command
                 if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(login))
                 {
                     string combinedName = $"[link=https://github.com/{login}]{name} ([grey]{login}[/])[/]";
-                    table.AddRow("名称", combinedName).Border(TableBorder.Square);
+                    table.AddRow("名称", combinedName);
                 }
 
                 foreach (KeyValuePair<string, JsonNode?> property in jsonNode.AsObject())
@@ -129,12 +129,10 @@ namespace ghv.Command
                             else if (new[] { "following", "followers" }.Contains(property.Key)){
                                 propertyValue = $"{propertyValue} 个";
                             }
-                            table.AddRow(propertyName, propertyValue).Border(TableBorder.Square);
+                            table.AddRow(propertyName, propertyValue);
                         }
                     }
                 }
-
-                table.LeftAligned();
 
                 AnsiConsole.Write(table);
             }
