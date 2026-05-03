@@ -177,11 +177,6 @@ namespace ghv.Command
                     ).Border(TableBorder.Square);
                 }
 
-                    table.LeftAligned();
-                    table.LeftAligned();
-
-                table.LeftAligned();
-
                 AnsiConsole.Write(table);
             }
             else
