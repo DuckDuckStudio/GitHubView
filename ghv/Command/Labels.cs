@@ -158,7 +158,7 @@ namespace ghv.Command
             if (allLabels.Count > 0)
             {
                 Table table = new();
-                table.Border(TableBorder.Rounded);
+                table.Border(TableBorder.Square);
                 table.BorderColor(Color.Grey);
                 table.AddColumn(new TableColumn("标签名称").Centered());
                 table.AddColumn(new TableColumn("颜色").Centered());
@@ -174,13 +174,8 @@ namespace ghv.Command
                         $"[#{labelColor}]{labelName}[/]",
                         $"[#{labelColor}]{labelColor}[/]",
                         $"[#{labelColor}]{labelDescription}[/]"
-                    ).Border(TableBorder.Square);
+                    );
                 }
-
-                    table.LeftAligned();
-                    table.LeftAligned();
-
-                table.LeftAligned();
 
                 AnsiConsole.Write(table);
             }
