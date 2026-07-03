@@ -60,7 +60,11 @@ jobs:
         7z a -tzip Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}.zip output/*
 
         # 创建安装包
-        curl -o "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
+        Write-Host "通过 GitHub API 下载中文翻译..."
+        $apiUrl = "https://api.github.com/repos/jrsoftware/issrc/contents/Files/Languages/ChineseSimplified.isl?ref=main"
+        $downloadPath = "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
+        Invoke-WebRequest -Uri $apiUrl -Headers @{ "Accept" = "application/vnd.github.raw+json" } -OutFile $downloadPath
+        Get-FileHash -Path $downloadPath -Algorithm SHA256
         iscc installer/Windows.iss
         iscc installer/SingleFile/Windows.iss
         move installer/GitHubView-installer.exe Release/GitHubView-${{ env.NIGHTLY_VERSION }}-${{ matrix.os }}-Setup.exe
